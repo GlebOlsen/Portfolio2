@@ -59,6 +59,14 @@ namespace IMDB.DataService.Db
             mb.Entity<BookmarkPerson>().ToTable("bookmark_person", "prod");
             mb.Entity<SearchHistory>().ToTable("search_history", "prod");
 
+            mb.Entity<Title>()
+                .Property(t => t.TitleType)
+                .HasConversion<string>();
+
+            mb.Entity<TitlePerson>()
+                .Property(tp => tp.Category)
+                .HasConversion<string>();
+
             // pks
             mb.Entity<Title>().HasKey(t => t.Tconst);
             mb.Entity<Person>().HasKey(p => p.Nconst);
@@ -83,7 +91,7 @@ namespace IMDB.DataService.Db
 
             mb.Entity<TitlePerson>()
                 .HasOne(tp => tp.Title)
-                .WithMany()
+                .WithMany(t => t.TitlePeople)
                 .HasForeignKey(tp => tp.Tconst);
 
             mb.Entity<TitlePerson>()

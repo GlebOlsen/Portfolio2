@@ -1,0 +1,117 @@
+using IMDB.DataService.Db;
+using IMDB.DataService.DTOs.Title;
+using IMDB.DataService.DTOs.Person;
+using IMDB.DataService.Interfaces;
+using Microsoft.EntityFrameworkCore;
+namespace IMDB.DataService.Services;
+
+public class TitleService : ITitleService
+{
+    private readonly DatabaseContext _db;
+
+    public TitleService(DatabaseContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<IEnumerable<TitleListDto>> GetAllTitlesAsync(int page = 0, int pageSize = 10)
+    {
+        return await _db.Titles.OrderBy(t => t.PrimaryTitle).Skip(page * pageSize).Take(pageSize).Select(t => new TitleListDto
+        {
+            Tconst = t.Tconst,
+            PrimaryTitle = t.PrimaryTitle,
+            StartYear = t.StartYear,
+            Plot = t.Plot,
+            Type = t.TitleType.ToString(),
+            PosterUrl = t.Poster
+        }).ToListAsync();
+    }
+
+    public async Task<TitleFullDto?> GetTitleByIdAsync(string tconst)
+    {
+        return await _db.Titles
+         .Where(t => t.Tconst == tconst)
+         .Select(t => new TitleFullDto
+         {
+             Tconst = t.Tconst,
+             PrimaryTitle = t.PrimaryTitle,
+             OriginalTitle = t.OriginalTitle,
+             Type = t.TitleType.ToString(),
+             StartYear = t.StartYear,
+             EndYear = t.EndYear,
+             RuntimeMin = t.RunTimeMin,
+             Rated = t.Rated,
+             Plot = t.Plot,
+             PosterUrl = t.Poster,
+             Award = t.Award,
+             Genres = t.Genres.Select(g => g.GenreName).ToList(),
+             Countries = t.Countries.Select(c => c.CountryName).ToList(),
+             People = t.TitlePeople
+                 .Select(tp => new TitlePersonDto
+                 {
+                     Nconst = tp.Nconst,
+                     FullName = tp.Person.FullName,
+                     Category = tp.Category,
+                     CharacterName = tp.CharacterName
+                 })
+                 .ToList()
+         })
+         .FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<TitleListDto>> GetTitlesByGenre(string genreName, int page = 0, int pageSize = 10)
+    {
+        return await _db.Titles.Where(t => t.Genres.Any(g => g.GenreName.ToLower() == genreName.ToLower())).OrderBy(t => t.PrimaryTitle).Skip(page * pageSize).Take(pageSize).Select(t => new TitleListDto
+        {
+            Tconst = t.Tconst,
+            PrimaryTitle = t.PrimaryTitle,
+            StartYear = t.StartYear,
+            Plot = t.Plot,
+            Type = t.TitleType.ToString(),
+            PosterUrl = t.Poster
+        }).ToListAsync();
+    }
+
+    public async Task<IEnumerable<TitleListDto>> GetTitlesByPersonAsync(string nconst, int page = 0, int pageSize = 10)
+    {
+        return await _db.Titles
+            .Where(t => t.TitlePeople.Any(p => p.Nconst == nconst))
+            .OrderBy(t => t.PrimaryTitle)
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .Select(t => new TitleListDto
+            {
+                Tconst = t.Tconst,
+                PrimaryTitle = t.PrimaryTitle,
+                StartYear = t.StartYear,
+                Plot = t.Plot,
+                Type = t.TitleType.ToString(),
+                PosterUrl = t.Poster
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<TitleListDto>> GetTitlesByTypeAsync(string titleType, int page = 0, int pageSize = 10)
+    {
+        return await _db.Titles
+            .Where(t => t.TitleType.ToString().ToLower() == titleType.ToLower())
+            .OrderBy(t => t.PrimaryTitle)
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .Select(t => new TitleListDto
+            {
+                Tconst = t.Tconst,
+                PrimaryTitle = t.PrimaryTitle,
+                StartYear = t.StartYear,
+                Plot = t.Plot,
+                Type = t.TitleType.ToString(),
+                PosterUrl = t.Poster
+            })
+            .ToListAsync();
+    }
+
+    public async Task<int> GetTotalTitlesCountAsync()
+    {
+        return await _db.Titles.CountAsync();
+    }
+}

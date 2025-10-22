@@ -1,9 +1,10 @@
+using IMDB.DataService.Db.Enums;
 namespace IMDB.DataService.Db.Entities;
 
 public class Title
 {
     public string Tconst { get; set; } = string.Empty;
-    public string? TitleType { get; set; }
+    public TitleType? TitleType { get; set; }
 
     public string? PrimaryTitle { get; set; }
 
@@ -26,6 +27,8 @@ public class Title
     public string? Award { get; set; }
 
     public ICollection<Person> KnownForByPeople { get; set; } = new List<Person>();
+
+    public List<TitlePerson> TitlePeople { get; set; } = new();
 
     public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 
