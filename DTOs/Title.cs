@@ -1,5 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using IMDB.DataService.DTOs.Person;
-using Microsoft.Net.Http.Headers;
+
 namespace IMDB.DataService.DTOs.Title;
 
 public class TitleListDto
@@ -28,4 +29,13 @@ public class TitleFullDto
     public List<string> Genres { get; set; } = new();
     public List<string?> Countries { get; set; }
     public List<TitlePersonDto> People { get; set; } = new();
+}
+
+public class TitleSearchResultDto
+{
+    [Column("tconst")]
+    public string Tconst { get; set; } = string.Empty;
+
+    [Column("primary_title")]
+    public string PrimaryTitle { get; set; } = string.Empty;
 }
