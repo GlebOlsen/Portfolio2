@@ -1,11 +1,13 @@
-namespace IMDB.DataService.Db.Entities;
+using ImdbClone.Api.Enums;
+
+namespace ImdbClone.Api.Entities;
 
 public class TitlePerson
 {
     public string Tconst { get; set; } = string.Empty;
     public string Nconst { get; set; } = string.Empty;
     public int Ordering { get; set; }
-    public string? Category { get; set; }
+    public PersonCategory? Category { get; set; }
     public string? Job { get; set; }
     public string? CharacterName { get; set; }
 
