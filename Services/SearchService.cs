@@ -1,15 +1,16 @@
-using IMDB.DataService.Db;
-using IMDB.DataService.DTOs.Title;
-using IMDB.DataService.Interfaces;
+using ImdbClone.Api.Database;
+using ImdbClone.Api.DTOs;
+using ImdbClone.Api.Interfaces;
+using ImdbClone.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace IMDB.DataService.Services;
 
 public class SearchService : ISearchService
 {
-    private readonly DatabaseContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public SearchService(DatabaseContext db)
+    public SearchService(ApplicationDbContext db)
     {
         _db = db;
     }
