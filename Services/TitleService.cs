@@ -1,15 +1,15 @@
-using IMDB.DataService.Db;
-using IMDB.DataService.DTOs.Title;
-using IMDB.DataService.DTOs.Person;
-using IMDB.DataService.Interfaces;
+using ImdbClone.Api.Database;
+using ImdbClone.Api.DTOs;
+using ImdbClone.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
-namespace IMDB.DataService.Services;
+
+namespace ImdbClone.Api.Services;
 
 public class TitleService : ITitleService
 {
-    private readonly DatabaseContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public TitleService(DatabaseContext db)
+    public TitleService(ApplicationDbContext db)
     {
         _db = db;
     }

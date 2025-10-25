@@ -1,13 +1,18 @@
-using IMDB.DataService.Db;
-using IMDB.DataService.Interfaces;
-using IMDB.DataService.Services;
+using System.Text;
+using ImdbClone.Api.Database;
+using ImdbClone.Api.Interfaces;
+using ImdbClone.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddControllers();
 
 DotNetEnv.Env.Load();
 
@@ -18,8 +23,29 @@ var password = Environment.GetEnvironmentVariable("DB_PASS");
 
 var connectionString = $"Host={host};Database={database};Username={username};Password={password}";
 
-builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(connectionString));
-builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+);
+
+builder.Services.AddSingleton<Hashing>();
+builder.Services.AddTransient<IUserService, UserService>();
+
+var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
+;
+
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opt =>
+    {
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero,
+        };
+    });
 
 var app = builder.Build();
 
@@ -30,29 +56,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet(
-    "/test-search",
-    async (ISearchService searchService) =>
-    {
-        // Test parameters
-        var testUserId = Guid.Parse("dd67eaed-199d-4164-9211-d6c410b923ad"); // test UUID
-        var title = "matrix";
-        var plot = "";
-        var characters = "";
-        var person = "";
+app.UseAuthentication();
+app.UseAuthorization();
 
-        var results = await searchService.StructuredSearchAsync(
-            testUserId,
-            title,
-            plot,
-            characters,
-            person,
-            0,
-            10
-        );
-
-        return Results.Ok(results);
-    }
-);
+app.MapControllers();
 
 app.Run();

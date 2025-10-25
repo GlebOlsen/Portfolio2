@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using IMDB.DataService.DTOs.Person;
+using Microsoft.Net.Http.Headers;
 
-namespace IMDB.DataService.DTOs.Title;
+namespace ImdbClone.Api.DTOs;
 
 public class TitleListDto
 {

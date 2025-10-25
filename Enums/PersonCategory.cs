@@ -1,4 +1,4 @@
-namespace IMDB.DataService.Db.Enums;
+namespace ImdbClone.Api.Enums;
 
 public enum PersonCategory
 {

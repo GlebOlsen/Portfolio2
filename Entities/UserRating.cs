@@ -1,10 +1,11 @@
-namespace IMDB.DataService.Db.Entities;
+namespace ImdbClone.Api.Entities;
 
-public class BookmarkTitle
+public class UserRating
 {
     public Guid UserId { get; set; }
     public string Tconst { get; set; } = string.Empty;
-    public DateTime BookmarkDate { get; set; }
+    public decimal Rating { get; set; }
+    public DateTime RatingDate { get; set; }
 
     // we alr have tconst and userid here but reference could be useful
     public ImdbUser? User { get; set; }

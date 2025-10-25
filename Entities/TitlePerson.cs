@@ -1,6 +1,6 @@
-using IMDB.DataService.Db.Enums;
+using ImdbClone.Api.Enums;
 
-namespace IMDB.DataService.Db.Entities;
+namespace ImdbClone.Api.Entities;
 
 public class TitlePerson
 {

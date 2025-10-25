@@ -1,15 +1,14 @@
-using IMDB.DataService.Db.Entities;
-using IMDB.DataService.DTOs.Title;
+using ImdbClone.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace IMDB.DataService.Db
+namespace ImdbClone.Api.Database
 {
-    public class DatabaseContext : DbContext
+    public class ApplicationDbContext : DbContext
     {
-        public DatabaseContext(DbContextOptions<DatabaseContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
-        public DatabaseContext() { }
+        public ApplicationDbContext() { }
 
         public DbSet<Title> Titles => Set<Title>();
         public DbSet<TitleAlias> TitleAliases => Set<TitleAlias>();
@@ -161,7 +160,7 @@ namespace IMDB.DataService.Db
             mb.Entity<Title>()
                 .HasMany(t => t.Countries)
                 .WithMany(c => c.Titles)
-                .UsingEntity(j => j.ToTable("title_country"));
+                .UsingEntity(j => j.ToTable("title_country", "prod"));
         }
     }
 }
