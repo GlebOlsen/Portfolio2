@@ -1,5 +1,6 @@
-using IMDB.DataService.Db.Enums;
-namespace IMDB.DataService.Db.Entities;
+using ImdbClone.Api.Enums;
+
+namespace ImdbClone.Api.Entities;
 
 public class Title
 {

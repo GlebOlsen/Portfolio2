@@ -1,4 +1,4 @@
-namespace IMDB.DataService.Db.Entities;
+namespace ImdbClone.Api.Entities;
 
 public class Country
 {

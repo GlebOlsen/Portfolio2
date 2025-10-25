@@ -1,12 +1,18 @@
+using System.Text;
 using Microsoft.EntityFrameworkCore;
-using IMDB.DataService.Db;
+using ImdbClone.Api.Database;
+using ImdbClone.Api.Interfaces;
+using ImdbClone.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddOpenApi();
+
+builder.Services.AddControllers();
 
 DotNetEnv.Env.Load();
 
@@ -17,9 +23,26 @@ var password = Environment.GetEnvironmentVariable("DB_PASS");
 
 var connectionString = $"Host={host};Database={database};Username={username};Password={password}";
 
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
 
+builder.Services.AddSingleton<Hashing>();
+builder.Services.AddTransient<IUserService, UserService>();
+
+var secret = Environment.GetEnvironmentVariable("JWT_SECRET");;
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opt =>
+    {
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 var app = builder.Build();
 
@@ -30,12 +53,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapGet("/testdb", async (DatabaseContext db) =>
-{
-    var count = await db.Titles.CountAsync();
-    return $"Titles in DB: {count}";
-});
+app.MapControllers();
 
 app.Run();
 

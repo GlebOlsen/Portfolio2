@@ -1,13 +1,13 @@
-using IMDB.DataService.Db.Entities;
+using ImdbClone.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace IMDB.DataService.Db
+namespace ImdbClone.Api.Database
 {
-    public class DatabaseContext : DbContext
+    public class ApplicationDbContext : DbContext
     {
-        public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        public DatabaseContext() { }
+        public ApplicationDbContext() { }
 
         public DbSet<Title> Titles => Set<Title>();
         public DbSet<TitleAlias> TitleAliases => Set<TitleAlias>();
@@ -44,20 +44,20 @@ namespace IMDB.DataService.Db
         protected override void OnModelCreating(ModelBuilder mb)
         {
             // table names
-            mb.Entity<Title>().ToTable("title", "prod");
-            mb.Entity<TitleAlias>().ToTable("title_alias", "prod");
-            mb.Entity<Person>().ToTable("person", "prod");
-            mb.Entity<TitlePerson>().ToTable("title_person", "prod");
-            mb.Entity<Genre>().ToTable("genre", "prod");
-            mb.Entity<Profession>().ToTable("profession", "prod");
-            mb.Entity<Country>().ToTable("country", "prod");
-            mb.Entity<Episode>().ToTable("episode", "prod");
-            mb.Entity<Rating>().ToTable("rating", "prod");
-            mb.Entity<ImdbUser>().ToTable("imdb_user", "prod");
-            mb.Entity<UserRating>().ToTable("user_rating", "prod");
-            mb.Entity<BookmarkTitle>().ToTable("bookmark_title", "prod");
-            mb.Entity<BookmarkPerson>().ToTable("bookmark_person", "prod");
-            mb.Entity<SearchHistory>().ToTable("search_history", "prod");
+            mb.Entity<Title>().ToTable("title");
+            mb.Entity<TitleAlias>().ToTable("title_alias");
+            mb.Entity<Person>().ToTable("person");
+            mb.Entity<TitlePerson>().ToTable("title_person");
+            mb.Entity<Genre>().ToTable("genre");
+            mb.Entity<Profession>().ToTable("profession");
+            mb.Entity<Country>().ToTable("country");
+            mb.Entity<Episode>().ToTable("episode");
+            mb.Entity<Rating>().ToTable("rating");
+            mb.Entity<ImdbUser>().ToTable("imdb_user");
+            mb.Entity<UserRating>().ToTable("user_rating");
+            mb.Entity<BookmarkTitle>().ToTable("bookmark_title");
+            mb.Entity<BookmarkPerson>().ToTable("bookmark_person");
+            mb.Entity<SearchHistory>().ToTable("search_history");
 
             mb.Entity<Title>()
                 .Property(t => t.TitleType)

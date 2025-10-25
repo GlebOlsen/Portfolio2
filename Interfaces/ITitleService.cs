@@ -1,6 +1,7 @@
-using IMDB.DataService.DTOs.Title;
+using ImdbClone.Api.DTOs;
+using ImdbClone.Api.Services;
 
-namespace IMDB.DataService.Interfaces;
+namespace ImdbClone.Api.Interfaces;
 
 public interface ITitleService
 {

@@ -1,3 +1,4 @@
+namespace ImdbClone.Api.Services;
 public class PaginatedResult<T>
 {
     public IEnumerable<T> Items { get; set; }

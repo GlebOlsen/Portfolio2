@@ -1,7 +1,7 @@
-using IMDB.DataService.Db.Entities;
-using IMDB.DataService.Db.Enums;
-using IMDB.DataService.DTOs.Title;
-namespace IMDB.DataService.DTOs.Person;
+using ImdbClone.Api.Entities;
+using ImdbClone.Api.Enums;
+
+namespace ImdbClone.Api.DTOs;
 
 public class TitlePersonDto
 {
@@ -19,5 +19,5 @@ public class PersonFullDto
     public int? DeathYear { get; set; }
     public decimal? DerivedRating { get; set; }
     public List<Profession> Professions { get; set; } = new();
-    public List<TitleListDto> KnownForTitles { get; set; } = new();
+  
 }
