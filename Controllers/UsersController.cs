@@ -11,39 +11,41 @@ namespace ImdbClone.Api.Controllers;
 
 [ApiController]
 [Route("users")]
-public class UsersController(IUserService userService, Hashing hashing, IConfiguration configuration) : ControllerBase
+public class UsersController(
+    IUserService userService,
+    Hashing hashing,
+    IConfiguration configuration
+) : ControllerBase
 {
     [HttpPost]
     public IActionResult SignUp(CreateUserDto dto)
     {
-        if (userService.GetUser(dto.Username) is not null || string.IsNullOrEmpty(dto.Password)) return BadRequest();
-        
+        if (userService.GetUser(dto.Username) is not null || string.IsNullOrEmpty(dto.Password))
+            return BadRequest();
+
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
 
         userService.CreateUser(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
         return Ok();
     }
-    
+
     [HttpPost("login")]
     public IActionResult Login(LoginUserDto dto)
     {
         var user = userService.GetUser(dto.Username);
 
-        if(user == null)
+        if (user == null)
         {
             return BadRequest();
         }
 
-        if(!hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
+        if (!hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
         {
             return BadRequest();
         }
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-        };
+        var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Username) };
 
         var secret = configuration["JWT_SECRET"];
 
