@@ -1,3 +1,4 @@
+using ImdbClone.Api.DTOs;
 using ImdbClone.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 

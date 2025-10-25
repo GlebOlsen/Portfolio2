@@ -2,6 +2,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace ImdbClone.Api.DTOs;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 public class TitleListDto
 {
     public string Tconst { get; set; } = string.Empty;
