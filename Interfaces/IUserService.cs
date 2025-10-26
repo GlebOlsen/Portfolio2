@@ -6,10 +6,13 @@ namespace ImdbClone.Api.Interfaces;
 
 public interface IUserService
 {
-    Task<UserDto?> GetUser(string? username);
-    Task<UserDto?> GetUser(Guid id);
-    Task<ImdbUser> CreateUser(string name, string username, string email, string password = null, string salt = null);
+    Task<UserDto?> GetUserAsync(string? username);
+    Task<UserDto?> GetUserAsync(Guid id);
+    Task<ImdbUser> CreateUserAsync(string name, string username, string email, string password = null, string salt = null);
     Task<PaginatedResult<BookmarkTitleListDto>> GetAllBookmarkedTitlesAsync(Guid userId, int page = 0, int pageSize = 10);
-    Task<bool> CreateBookmarkTitle(Guid userId, string tconst);
-    Task<bool> DeleteBookmarkTitle(Guid userId, string tconst);
+    Task<bool> CreateBookmarkTitleAsync(Guid userId, string tconst);
+    Task<bool> DeleteBookmarkTitleAsync(Guid userId, string tconst);
+    Task<PaginatedResult<BookmarkPersonListDto>> GetAllBookmarkedPersonAsync(Guid userId, int page = 0, int pageSize = 10);
+    Task<bool> CreateBookmarkPersonAsync(Guid userId, string nconst);
+    Task<bool> DeleteBookmarkPersonAsync(Guid userId, string nconst);
 }

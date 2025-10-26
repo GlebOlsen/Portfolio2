@@ -17,11 +17,11 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [HttpPost]
     public async Task<IActionResult> SignUp(CreateUserDto dto)
     {
-        if (await userService.GetUser(dto.Username) is not null || string.IsNullOrEmpty(dto.Password)) return BadRequest();
+        if (await userService.GetUserAsync(dto.Username) is not null || string.IsNullOrEmpty(dto.Password)) return BadRequest();
         
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
 
-        await userService.CreateUser(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
+        await userService.CreateUserAsync(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
         return Ok();
     }
@@ -29,7 +29,7 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginUserDto dto)
     {
-        var user = await userService.GetUser(dto.Username);
+        var user = await userService.GetUserAsync(dto.Username);
 
         if(user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
         {
@@ -61,11 +61,11 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
 
     [HttpGet("bookmark-title")]
     [Authorize]
-    public async Task<IActionResult> GetBookmarkedTitles([FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAllBookmarkedTitles([FromQuery] int? page, [FromQuery] int? pageSize)
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
 
-        var result = await userService.GetAllBookmarkedTitlesAsync(userId, pageSize: pageSize ?? 10);
+        var result = await userService.GetAllBookmarkedTitlesAsync(userId, page: page ?? 0, pageSize: pageSize ?? 10);
 
         return Ok(result);
     }
@@ -76,7 +76,7 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
         
-        var result = await userService.CreateBookmarkTitle(userId, dto.Tconst);
+        var result = await userService.CreateBookmarkTitleAsync(userId, dto.Tconst);
 
         if (!result) return NotFound("Title not found");
        
@@ -89,10 +89,47 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
         
-        var result =  await userService.DeleteBookmarkTitle(userId, dto.Tconst);
+        var result =  await userService.DeleteBookmarkTitleAsync(userId, dto.Tconst);
 
         if (!result) return NotFound("Title not found");
        
+        return NoContent();
+    }
+    
+    [HttpGet("bookmark-person")]
+    [Authorize]
+    public async Task<IActionResult> GetAllBookmarkedPersons([FromQuery] int? page, [FromQuery] int? pageSize)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+
+        var result = await userService.GetAllBookmarkedPersonAsync(userId, page: page ?? 0, pageSize: pageSize ?? 10);
+
+        return Ok(result);
+    }
+
+    [HttpPost("bookmark-person")]
+    [Authorize]
+    public async Task<IActionResult> CreateBookmarkPerson(CreateBookmarkPersonDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) return BadRequest();
+
+        var result = await userService.CreateBookmarkPersonAsync(id, dto.Nconst);
+
+        if (!result) return NotFound("Person not found");
+
+        return Ok();
+    }
+    
+    [HttpDelete("bookmark-person")]
+    [Authorize]
+    public async Task<IActionResult> DeleteBookmarkPerson(CreateBookmarkPersonDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) return BadRequest();
+
+        var result = await userService.DeleteBookmarkPersonAsync(id, dto.Nconst);
+
+        if (!result) return NotFound("Person not found");
+
         return NoContent();
     }
 }
