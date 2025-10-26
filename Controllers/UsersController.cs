@@ -4,6 +4,7 @@ using System.Text;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,35 +15,31 @@ namespace ImdbClone.Api.Controllers;
 public class UsersController(IUserService userService, Hashing hashing, IConfiguration configuration) : ControllerBase
 {
     [HttpPost]
-    public IActionResult SignUp(CreateUserDto dto)
+    public async Task<IActionResult> SignUp(CreateUserDto dto)
     {
-        if (userService.GetUser(dto.Username) is not null || string.IsNullOrEmpty(dto.Password)) return BadRequest();
+        if (await userService.GetUser(dto.Username) is not null || string.IsNullOrEmpty(dto.Password)) return BadRequest();
         
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
 
-        userService.CreateUser(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
+        await userService.CreateUser(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
         return Ok();
     }
     
     [HttpPost("login")]
-    public IActionResult Login(LoginUserDto dto)
+    public async Task<IActionResult> Login(LoginUserDto dto)
     {
-        var user = userService.GetUser(dto.Username);
+        var user = await userService.GetUser(dto.Username);
 
-        if(user == null)
-        {
-            return BadRequest();
-        }
-
-        if(!hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
+        if(user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
         {
             return BadRequest();
         }
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Name, user.Username)
         };
 
         var secret = configuration["JWT_SECRET"];
@@ -60,5 +57,42 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
         return Ok(new { user.Username, token = jwt });
+    }
+
+    [HttpGet("bookmark-title")]
+    [Authorize]
+    public async Task<IActionResult> GetBookmarkedTitles([FromQuery] int? pageSize)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+
+        var result = await userService.GetAllBookmarkedTitlesAsync(userId, pageSize: pageSize ?? 10);
+
+        return Ok(result);
+    }
+
+    [HttpPost("bookmark-title")]
+    [Authorize]
+    public async Task<IActionResult> CreateBookmarkTitle(CreateBookmarkTitleDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+        
+        var result = await userService.CreateBookmarkTitle(userId, dto.Tconst);
+
+        if (!result) return NotFound("Title not found");
+       
+        return Ok();
+    }
+
+    [HttpDelete("bookmark-title")]
+    [Authorize]
+    public async Task<IActionResult> DeleteBookmarkTitle(DeleteBookmarkTitleDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+        
+        var result =  await userService.DeleteBookmarkTitle(userId, dto.Tconst);
+
+        if (!result) return NotFound("Title not found");
+       
+        return NoContent();
     }
 }
