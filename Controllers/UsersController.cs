@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using ImdbClone.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -63,9 +65,11 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> GetAllBookmarkedTitles([FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.GetAllBookmarkedTitlesAsync(userId, page: page ?? 0, pageSize: pageSize ?? 10);
+        if (userId is null) return BadRequest("Invalid user ID");
+
+        var result = await userService.GetAllBookmarkedTitlesAsync(userId.Value, page: page ?? 0, pageSize: pageSize ?? 10);
 
         return Ok(result);
     }
@@ -74,9 +78,11 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> CreateBookmarkTitle(CreateBookmarkTitleDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+        var userId = User.GetUserId();
+
+        if (userId is null) return BadRequest("Invalid user ID");
         
-        var result = await userService.CreateBookmarkTitleAsync(userId, dto.Tconst);
+        var result = await userService.CreateBookmarkTitleAsync(userId.Value, dto.Tconst);
 
         if (!result) return NotFound("Title not found");
        
@@ -87,11 +93,13 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> DeleteBookmarkTitle(DeleteBookmarkTitleDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
-        
-        var result =  await userService.DeleteBookmarkTitleAsync(userId, dto.Tconst);
+        var userId = User.GetUserId();
 
-        if (!result) return NotFound("Title not found");
+        if (userId is null) return BadRequest("Invalid user ID");
+        
+        var result =  await userService.DeleteBookmarkTitleAsync(userId.Value, dto.Tconst);
+
+        if (!result) return NotFound("Title bookmark not found");
        
         return NoContent();
     }
@@ -100,9 +108,11 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> GetAllBookmarkedPersons([FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.GetAllBookmarkedPersonAsync(userId, page: page ?? 0, pageSize: pageSize ?? 10);
+        if (userId is null) return BadRequest("Invalid user ID");
+
+        var result = await userService.GetAllBookmarkedPersonAsync(userId.Value, page: page ?? 0, pageSize: pageSize ?? 10);
 
         return Ok(result);
     }
@@ -111,9 +121,11 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> CreateBookmarkPerson(CreateBookmarkPersonDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.CreateBookmarkPersonAsync(id, dto.Nconst);
+        if (userId is null) return BadRequest("Invalid user ID");
+
+        var result = await userService.CreateBookmarkPersonAsync(userId.Value, dto.Nconst);
 
         if (!result) return NotFound("Person not found");
 
@@ -124,11 +136,58 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> DeleteBookmarkPerson(CreateBookmarkPersonDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.DeleteBookmarkPersonAsync(id, dto.Nconst);
+        if (userId is null) return BadRequest("Invalid user ID");
 
-        if (!result) return NotFound("Person not found");
+        var result = await userService.DeleteBookmarkPersonAsync(userId.Value, dto.Nconst);
+
+        if (!result) return NotFound("Person bookmark not found");
+
+        return NoContent();
+    }
+
+    [HttpGet("rate-title")]
+    [Authorize]
+    public async Task<IActionResult> GetAllRatedTitles([FromQuery] int? page, [FromQuery] int? pageSize)
+    {
+        var userId = User.GetUserId();
+
+        if (userId is null) return BadRequest("Invalid user ID");
+        
+        var result = await userService.GetAllRatedTitlesAsync(userId.Value, page: page ?? 0, pageSize: pageSize ?? 10);
+
+        return Ok(result);
+    }
+
+    [HttpPost("rate-title")]
+    [Authorize]
+    public async Task<IActionResult> CreateTitleRating(CreateTitleRatingDto dto)
+    {
+        var userId = User.GetUserId();
+
+        if (userId is null) return BadRequest("Invalid user ID");
+
+        if (dto.Rating is < 1 or > 10) return BadRequest("Rating must be between 1-10");
+
+        var result = await userService.CreateTitleRatingAsync(userId.Value, dto.Tconst, dto.Rating);
+
+        if (!result) return NotFound("Title not found");
+
+        return Ok();
+    }
+
+    [HttpDelete("rate-title")]
+    [Authorize]
+    public async Task<IActionResult> DeleteTitleRating(DeleteTitleRatingDto dto)
+    {
+        var userId = User.GetUserId();
+
+        if (userId is null) return BadRequest("Invalid user ID");
+
+        var result = await userService.DeleteTitleRatingAsync(dto.Tconst, userId.Value);
+
+        if (!result) return NotFound("Rating not found");
 
         return NoContent();
     }
