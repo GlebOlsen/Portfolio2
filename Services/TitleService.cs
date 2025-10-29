@@ -54,7 +54,7 @@ public class TitleService : ITitleService
                 Tconst = t.Tconst,
                 PrimaryTitle = t.PrimaryTitle,
                 OriginalTitle = t.OriginalTitle,
-                Type = t.TitleType.ToString(),
+                Type = t.TitleType,
                 StartYear = t.StartYear,
                 EndYear = t.EndYear,
                 RuntimeMin = t.RunTimeMin,

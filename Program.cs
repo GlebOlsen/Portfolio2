@@ -1,4 +1,5 @@
 using System.Text;
+using IMDB.DataService.Services;
 using ImdbClone.Api.Database;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
@@ -33,6 +34,7 @@ builder.Services.AddSingleton<Hashing>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<ITitleService, TitleService>();
 builder.Services.AddTransient<PaginationService>();
+builder.Services.AddTransient<ISearchService, SearchService>();
 
 var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
 

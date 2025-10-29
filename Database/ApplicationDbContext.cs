@@ -51,6 +51,7 @@ namespace ImdbClone.Api.Database
             mb.Entity<TitleSearchResultDto>().HasNoKey().ToView(null);
 
             mb.Entity<Title>().Property(t => t.TitleType).HasConversion<string>();
+            mb.Entity<TitlePerson>().Property(tp => tp.Category).HasConversion<string>();
 
             // table names
             mb.Entity<Title>().ToTable("title");
@@ -95,15 +96,15 @@ namespace ImdbClone.Api.Database
 
             mb.Entity<TitlePerson>()
                 .HasOne(tp => tp.Title)
-                .WithMany()
-                .HasForeignKey(tp => tp.Tconst);
+                .WithMany(t => t.TitlePeople)
+                .HasForeignKey(tp => tp.Tconst)
+                .HasPrincipalKey(t => t.Tconst);
 
             mb.Entity<TitlePerson>()
                 .HasOne(tp => tp.Person)
                 .WithMany()
-                .HasForeignKey(tp => tp.Nconst);
-
-            mb.Entity<Episode>().HasOne(e => e.Title).WithMany().HasForeignKey(e => e.Tconst);
+                .HasForeignKey(tp => tp.Nconst)
+                .HasPrincipalKey(p => p.Nconst);
 
             mb.Entity<Episode>()
                 .HasOne(e => e.ParentTitle)
@@ -144,26 +145,82 @@ namespace ImdbClone.Api.Database
                 .WithMany()
                 .HasForeignKey(sh => sh.UserId);
 
-            // many to many relationships
+            // many to many relationships + column mapping
             mb.Entity<Person>()
                 .HasMany(p => p.KnownForTitles)
                 .WithMany(t => t.KnownForByPeople)
-                .UsingEntity(j => j.ToTable("person_known_for_title"));
+                .UsingEntity(
+                    "person_known_for_title",
+                    l =>
+                        l.HasOne(typeof(Title))
+                            .WithMany()
+                            .HasForeignKey("tconst")
+                            .HasPrincipalKey(nameof(Title.Tconst)),
+                    r =>
+                        r.HasOne(typeof(Person))
+                            .WithMany()
+                            .HasForeignKey("nconst")
+                            .HasPrincipalKey(nameof(Person.Nconst)),
+                    j => j.HasKey("nconst", "tconst")
+                );
 
             mb.Entity<Person>()
                 .HasMany(p => p.Professions)
                 .WithMany(pr => pr.People)
-                .UsingEntity(j => j.ToTable("person_profession"));
+                .UsingEntity(
+                    "person_profession",
+                    l =>
+                        l.HasOne(typeof(Profession))
+                            .WithMany()
+                            .HasForeignKey("profession_id")
+                            .HasPrincipalKey(nameof(Profession.ProfessionId)),
+                    r =>
+                        r.HasOne(typeof(Person))
+                            .WithMany()
+                            .HasForeignKey("nconst")
+                            .HasPrincipalKey(nameof(Person.Nconst)),
+                    j => j.HasKey("profession_id", "nconst")
+                );
 
             mb.Entity<Title>()
                 .HasMany(t => t.Genres)
                 .WithMany(g => g.Titles)
-                .UsingEntity(j => j.ToTable("title_genre"));
+                .UsingEntity(
+                    "title_genre",
+                    l =>
+                        l.HasOne(typeof(Genre))
+                            .WithMany()
+                            .HasForeignKey("genre_id")
+                            .HasPrincipalKey(nameof(Genre.GenreId)),
+                    r =>
+                        r.HasOne(typeof(Title))
+                            .WithMany()
+                            .HasForeignKey("tconst")
+                            .HasPrincipalKey(nameof(Title.Tconst)),
+                    j => j.HasKey("tconst", "genre_id")
+                );
 
             mb.Entity<Title>()
                 .HasMany(t => t.Countries)
                 .WithMany(c => c.Titles)
-                .UsingEntity(j => j.ToTable("title_country", "prod"));
+                .UsingEntity(
+                    "title_country",
+                    l =>
+                        l.HasOne(typeof(Country))
+                            .WithMany()
+                            .HasForeignKey("country_id")
+                            .HasPrincipalKey(nameof(Country.CountryId)),
+                    r =>
+                        r.HasOne(typeof(Title))
+                            .WithMany()
+                            .HasForeignKey("tconst")
+                            .HasPrincipalKey(nameof(Title.Tconst)),
+                    j =>
+                    {
+                        j.ToTable("title_country");
+                        j.HasKey("tconst", "country_id");
+                    }
+                );
         }
     }
 }

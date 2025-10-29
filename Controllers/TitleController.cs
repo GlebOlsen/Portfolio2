@@ -1,6 +1,7 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ImdbClone.Api.Controllers;
 
@@ -17,7 +18,7 @@ public class TitleController(ITitleService titleService, PaginationService pagin
     {
         var result = await titleService.GetAllTitlesAsync(page, pageSize);
 
-        var queryParams = new Dictionary<string, string?> { { "pageSize", pageSize.ToString() } };
+        var queryParams = new Dictionary<string, string?>();
 
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 
@@ -27,14 +28,14 @@ public class TitleController(ITitleService titleService, PaginationService pagin
     [HttpGet("{tconst}")]
     public async Task<IActionResult> GetTitleById(string tconst)
     {
-        var title = await titleService.GetTitleByIdAsync(tconst);
+        var result = await titleService.GetTitleByIdAsync(tconst);
 
-        if (title == null)
+        if (result == null)
         {
             return NotFound(new { message = $"Title '{tconst}' not found" });
         }
 
-        return Ok(title);
+        return Ok(result);
     }
 
     [HttpGet("genre/{genreName}")]
@@ -45,6 +46,11 @@ public class TitleController(ITitleService titleService, PaginationService pagin
     )
     {
         var result = await titleService.GetTitlesByGenre(genreName, page, pageSize);
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
         return Ok(result);
     }
 
@@ -56,6 +62,11 @@ public class TitleController(ITitleService titleService, PaginationService pagin
     )
     {
         var result = await titleService.GetTitlesByPersonAsync(nconst, page, pageSize);
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
         return Ok(result);
     }
 
@@ -67,6 +78,11 @@ public class TitleController(ITitleService titleService, PaginationService pagin
     )
     {
         var result = await titleService.GetTitlesByTypeAsync(titleType, page, pageSize);
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
         return Ok(result);
     }
 
