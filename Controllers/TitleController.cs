@@ -1,11 +1,13 @@
 using ImdbClone.Api.Interfaces;
+using ImdbClone.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
 
 [ApiController]
 [Route("title")]
-public class TitleController(ITitleService titleService) : ControllerBase
+public class TitleController(ITitleService titleService, PaginationService paginationService)
+    : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAllTitlesAsync(
@@ -14,6 +16,11 @@ public class TitleController(ITitleService titleService) : ControllerBase
     )
     {
         var result = await titleService.GetAllTitlesAsync(page, pageSize);
+
+        var queryParams = new Dictionary<string, string?> { { "pageSize", pageSize.ToString() } };
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
         return Ok(result);
     }
 

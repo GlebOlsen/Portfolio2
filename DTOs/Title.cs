@@ -3,6 +3,7 @@ using Microsoft.Net.Http.Headers;
 namespace ImdbClone.Api.DTOs;
 
 using System.ComponentModel.DataAnnotations.Schema;
+using ImdbClone.Api.Enums;
 
 public class TitleListDto
 {
@@ -10,7 +11,7 @@ public class TitleListDto
     public string PrimaryTitle { get; set; } = string.Empty;
     public int? StartYear { get; set; }
     public string? Plot { get; set; }
-    public string? Type { get; set; }
+    public TitleType? Type { get; set; }
     public string? PosterUrl { get; set; }
 }
 

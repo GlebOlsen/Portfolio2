@@ -7,5 +7,11 @@ public interface IUserService
 {
     UserDto? GetUser(string? username);
     UserDto? GetUser(Guid id);
-    ImdbUser CreateUser(string name, string username, string email, string password = null, string salt = null);
+    ImdbUser CreateUser(
+        string name,
+        string username,
+        string email,
+        string password = null,
+        string salt = null
+    );
 }

@@ -31,7 +31,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType.ToString(),
+                Type = t.TitleType,
                 PosterUrl = t.Poster,
             })
             .ToListAsync();
@@ -98,7 +98,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType.ToString(),
+                Type = t.TitleType,
                 PosterUrl = t.Poster,
             })
             .ToListAsync();
@@ -131,7 +131,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType.ToString(),
+                Type = t.TitleType,
                 PosterUrl = t.Poster,
             })
             .ToListAsync();
@@ -164,7 +164,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType.ToString(),
+                Type = t.TitleType,
                 PosterUrl = t.Poster,
             })
             .ToListAsync();

@@ -10,6 +10,8 @@ DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddControllers();
@@ -29,9 +31,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<Hashing>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<ITitleService, TitleService>();
+builder.Services.AddTransient<PaginationService>();
 
 var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
-;
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

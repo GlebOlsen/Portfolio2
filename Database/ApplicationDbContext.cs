@@ -50,6 +50,8 @@ namespace ImdbClone.Api.Database
         {
             mb.Entity<TitleSearchResultDto>().HasNoKey().ToView(null);
 
+            mb.Entity<Title>().Property(t => t.TitleType).HasConversion<string>();
+
             // table names
             mb.Entity<Title>().ToTable("title");
             mb.Entity<TitleAlias>().ToTable("title_alias");
