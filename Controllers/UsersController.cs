@@ -4,6 +4,7 @@ using System.Text;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,34 +19,36 @@ public class UsersController(
 ) : ControllerBase
 {
     [HttpPost]
-    public IActionResult SignUp(CreateUserDto dto)
+    public async Task<IActionResult> SignUp(CreateUserDto dto)
     {
-        if (userService.GetUser(dto.Username) is not null || string.IsNullOrEmpty(dto.Password))
+        if (
+            await userService.GetUserAsync(dto.Username) is not null
+            || string.IsNullOrEmpty(dto.Password)
+        )
             return BadRequest();
 
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
 
-        userService.CreateUser(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
+        await userService.CreateUserAsync(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
         return Ok();
     }
 
     [HttpPost("login")]
-    public IActionResult Login(LoginUserDto dto)
+    public async Task<IActionResult> Login(LoginUserDto dto)
     {
-        var user = userService.GetUser(dto.Username);
+        var user = await userService.GetUserAsync(dto.Username);
 
-        if (user == null)
+        if (user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
         {
             return BadRequest();
         }
 
-        if (!hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
+        var claims = new List<Claim>
         {
-            return BadRequest();
-        }
-
-        var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Username) };
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+        };
 
         var secret = configuration["JWT_SECRET"];
 
@@ -62,5 +65,103 @@ public class UsersController(
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
         return Ok(new { user.Username, token = jwt });
+    }
+
+    [HttpGet("bookmark-title")]
+    [Authorize]
+    public async Task<IActionResult> GetAllBookmarkedTitles(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize
+    )
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return BadRequest();
+
+        var result = await userService.GetAllBookmarkedTitlesAsync(
+            userId,
+            page: page ?? 0,
+            pageSize: pageSize ?? 10
+        );
+
+        return Ok(result);
+    }
+
+    [HttpPost("bookmark-title")]
+    [Authorize]
+    public async Task<IActionResult> CreateBookmarkTitle(CreateBookmarkTitleDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return BadRequest();
+
+        var result = await userService.CreateBookmarkTitleAsync(userId, dto.Tconst);
+
+        if (!result)
+            return NotFound("Title not found");
+
+        return Ok();
+    }
+
+    [HttpDelete("bookmark-title")]
+    [Authorize]
+    public async Task<IActionResult> DeleteBookmarkTitle(DeleteBookmarkTitleDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return BadRequest();
+
+        var result = await userService.DeleteBookmarkTitleAsync(userId, dto.Tconst);
+
+        if (!result)
+            return NotFound("Title not found");
+
+        return NoContent();
+    }
+
+    [HttpGet("bookmark-person")]
+    [Authorize]
+    public async Task<IActionResult> GetAllBookmarkedPersons(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize
+    )
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return BadRequest();
+
+        var result = await userService.GetAllBookmarkedPersonAsync(
+            userId,
+            page: page ?? 0,
+            pageSize: pageSize ?? 10
+        );
+
+        return Ok(result);
+    }
+
+    [HttpPost("bookmark-person")]
+    [Authorize]
+    public async Task<IActionResult> CreateBookmarkPerson(CreateBookmarkPersonDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+            return BadRequest();
+
+        var result = await userService.CreateBookmarkPersonAsync(id, dto.Nconst);
+
+        if (!result)
+            return NotFound("Person not found");
+
+        return Ok();
+    }
+
+    [HttpDelete("bookmark-person")]
+    [Authorize]
+    public async Task<IActionResult> DeleteBookmarkPerson(CreateBookmarkPersonDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+            return BadRequest();
+
+        var result = await userService.DeleteBookmarkPersonAsync(id, dto.Nconst);
+
+        if (!result)
+            return NotFound("Person not found");
+
+        return NoContent();
     }
 }
