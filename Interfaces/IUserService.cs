@@ -1,3 +1,4 @@
+using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Entities;
 using ImdbClone.Api.Services;
