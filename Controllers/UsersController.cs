@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using ImdbClone.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -77,6 +79,10 @@ public class UsersController(
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return BadRequest();
+        var userId = User.GetUserId();
+
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
         var result = await userService.GetAllBookmarkedTitlesAsync(
             userId,
@@ -151,7 +157,7 @@ public class UsersController(
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
             return BadRequest();
 
-        var result = await userService.CreateBookmarkPersonAsync(id, dto.Nconst);
+        var result = await userService.CreateBookmarkPersonAsync(userId.Value, dto.Nconst);
 
         if (!result)
             return NotFound("Person not found");
@@ -166,7 +172,24 @@ public class UsersController(
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
             return BadRequest();
 
-        var result = await userService.DeleteBookmarkPersonAsync(id, dto.Nconst);
+        var result = await userService.CreateTitleRatingAsync(userId.Value, dto.Tconst, dto.Rating);
+
+        if (!result)
+            return NotFound("Title not found");
+
+        return Ok();
+    }
+
+    [HttpDelete("rate-title")]
+    [Authorize]
+    public async Task<IActionResult> DeleteTitleRating(DeleteTitleRatingDto dto)
+    {
+        var userId = User.GetUserId();
+
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.DeleteTitleRatingAsync(dto.Tconst, userId.Value);
 
         if (!result)
             return NotFound("Person not found");

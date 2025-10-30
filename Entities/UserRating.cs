@@ -13,7 +13,7 @@ public class UserRating
     public string Tconst { get; set; } = string.Empty;
 
     [Column("rating")]
-    public decimal Rating { get; set; }
+    public int Rating { get; set; }
 
     [Column("rating_date")]
     public DateTime RatingDate { get; set; }
