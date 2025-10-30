@@ -4,7 +4,7 @@ public class UserRating
 {
     public Guid UserId { get; set; }
     public string Tconst { get; set; } = string.Empty;
-    public decimal Rating { get; set; }
+    public int Rating { get; set; }
     public DateTime RatingDate { get; set; }
 
     // we alr have tconst and userid here but reference could be useful

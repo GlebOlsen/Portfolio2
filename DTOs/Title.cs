@@ -28,3 +28,11 @@ public class TitleFullDto
     public List<string?> Countries { get; set; }
     public List<TitlePersonDto> People { get; set; } = new();
 }
+
+public class TitleRatingListDto
+{
+    public string Tconst { get; set; }
+    public string PrimaryTitle { get; set; }
+    public int Rating { get; set; }
+    public DateTime RatingDate { get; set; }
+}
