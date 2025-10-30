@@ -77,15 +77,13 @@ public class UsersController(
         [FromQuery] int? pageSize = 10
     )
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return BadRequest();
         var userId = User.GetUserId();
 
         if (userId is null)
             return BadRequest("Invalid user ID");
 
         var result = await userService.GetAllBookmarkedTitlesAsync(
-            userId,
+            userId.Value,
             page: page ?? 0,
             pageSize: pageSize ?? 10
         );
@@ -154,11 +152,12 @@ public class UsersController(
     [Authorize]
     public async Task<IActionResult> CreateBookmarkPerson(CreateBookmarkPersonDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
-            return BadRequest();
+        var userId = User.GetUserId();
+
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
         var result = await userService.CreateBookmarkPersonAsync(userId.Value, dto.Nconst);
-
         if (!result)
             return NotFound("Person not found");
 
@@ -169,10 +168,12 @@ public class UsersController(
     [Authorize]
     public async Task<IActionResult> DeleteBookmarkPerson(CreateBookmarkPersonDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
-            return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.CreateTitleRatingAsync(userId.Value, dto.Tconst, dto.Rating);
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.DeleteBookmarkTitleAsync(userId.Value, dto.Nconst);
 
         if (!result)
             return NotFound("Title not found");
