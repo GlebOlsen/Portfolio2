@@ -14,5 +14,5 @@ public enum PersonCategory
     Producer,
     ProductionDesigner,
     Self,
-    Writer
+    Writer,
 }

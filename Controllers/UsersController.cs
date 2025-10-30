@@ -15,6 +15,7 @@ namespace ImdbClone.Api.Controllers;
 public class UsersController(
     IUserService userService,
     Hashing hashing,
+    PaginationService paginationService,
     IConfiguration configuration
 ) : ControllerBase
 {
@@ -70,8 +71,8 @@ public class UsersController(
     [HttpGet("bookmark-title")]
     [Authorize]
     public async Task<IActionResult> GetAllBookmarkedTitles(
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize
+        [FromQuery] int? page = 0,
+        [FromQuery] int? pageSize = 10
     )
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
@@ -82,6 +83,10 @@ public class UsersController(
             page: page ?? 0,
             pageSize: pageSize ?? 10
         );
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 
         return Ok(result);
     }
@@ -119,8 +124,8 @@ public class UsersController(
     [HttpGet("bookmark-person")]
     [Authorize]
     public async Task<IActionResult> GetAllBookmarkedPersons(
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize
+        [FromQuery] int? page = 0,
+        [FromQuery] int? pageSize = 10
     )
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
@@ -131,6 +136,10 @@ public class UsersController(
             page: page ?? 0,
             pageSize: pageSize ?? 10
         );
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 
         return Ok(result);
     }
