@@ -17,18 +17,18 @@ namespace ImdbClone.Api.Database
         public DbSet<Genre> Genres => Set<Genre>();
         public DbSet<Profession> Professions => Set<Profession>();
         public DbSet<Country> Countries => Set<Country>();
-
         public DbSet<TitlePerson> TitlePeople => Set<TitlePerson>();
         public DbSet<Rating> Ratings => Set<Rating>();
         public DbSet<Episode> Episodes => Set<Episode>();
-
         public DbSet<ImdbUser> ImdbUsers => Set<ImdbUser>();
         public DbSet<UserRating> UserRatings => Set<UserRating>();
         public DbSet<BookmarkTitle> BookmarkTitles => Set<BookmarkTitle>();
         public DbSet<BookmarkPerson> BookmarkPeople => Set<BookmarkPerson>();
         public DbSet<SearchHistory> SearchHistories => Set<SearchHistory>();
-
         public DbSet<TitleSearchResultDto> TitleSearchResults { get; set; }
+        public DbSet<PersonSearchResultDto> PersonSearchResults { get; set; }
+        public DbSet<PersonWithProfessionDto> PersonWithProfessionDto { get; set; }
+        public DbSet<WordFrequencyDto> WordFrequencies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -49,6 +49,9 @@ namespace ImdbClone.Api.Database
         protected override void OnModelCreating(ModelBuilder mb)
         {
             mb.Entity<TitleSearchResultDto>().HasNoKey().ToView(null);
+            mb.Entity<PersonSearchResultDto>().HasNoKey().ToView(null);
+            mb.Entity<PersonWithProfessionDto>().HasNoKey().ToView(null);
+            mb.Entity<WordFrequencyDto>().HasNoKey().ToView(null);
 
             mb.Entity<Title>().Property(t => t.TitleType).HasConversion<string>();
             mb.Entity<TitlePerson>().Property(tp => tp.Category).HasConversion<string>();

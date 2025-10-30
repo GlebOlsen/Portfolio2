@@ -19,5 +19,25 @@ public class PersonFullDto
     public int? DeathYear { get; set; }
     public decimal? DerivedRating { get; set; }
     public List<Profession> Professions { get; set; } = new();
-  
+}
+
+public class PersonSearchResultDto
+{
+    public string Nconst { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public int? BirthYear { get; set; }
+    public int? DeathYear { get; set; }
+}
+
+public class PersonWithProfessionDto
+{
+    public string Nconst { get; set; } = string.Empty;
+
+    public string FullName { get; set; } = string.Empty;
+
+    public int? BirthYear { get; set; }
+
+    public int? DeathYear { get; set; }
+
+    public string? Professions { get; set; }
 }
