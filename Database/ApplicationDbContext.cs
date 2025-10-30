@@ -153,22 +153,30 @@ namespace ImdbClone.Api.Database
             mb.Entity<Person>()
                 .HasMany(p => p.KnownForTitles)
                 .WithMany(t => t.KnownForByPeople)
-                .UsingEntity(j => j.ToTable("person_known_for_title", "prod"));
+                .UsingEntity(j => j.ToTable("person_known_for_title"));
 
             mb.Entity<Person>()
                 .HasMany(p => p.Professions)
                 .WithMany(pr => pr.People)
-                .UsingEntity(j => j.ToTable("person_profession", "prod"));
+                .UsingEntity(j => j.ToTable("person_profession"));
 
             mb.Entity<Title>()
                 .HasMany(t => t.Genres)
                 .WithMany(g => g.Titles)
-                .UsingEntity(j => j.ToTable("title_genre", "prod"));
+                .UsingEntity<Dictionary<string, object>>(
+                    "title_genre",
+                    j => j.HasOne<Genre>().WithMany().HasForeignKey("genre_id"),
+                    j => j.HasOne<Title>().WithMany().HasForeignKey("tconst")
+                );
 
             mb.Entity<Title>()
                 .HasMany(t => t.Countries)
                 .WithMany(c => c.Titles)
-                .UsingEntity(j => j.ToTable("title_country", "prod"));
+                .UsingEntity<Dictionary<string, object>>(
+                    "title_country",
+                    j => j.HasOne<Country>().WithMany().HasForeignKey("country_id"),
+                    j => j.HasOne<Title>().WithMany().HasForeignKey("tconst")
+                );
         }
     }
 }
