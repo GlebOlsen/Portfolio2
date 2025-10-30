@@ -1,7 +1,6 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ImdbClone.Api.Controllers;
 

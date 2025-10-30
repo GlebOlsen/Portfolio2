@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace ImdbClone.Api.Services;
 
 public class PaginatedResult<T>

@@ -1,5 +1,4 @@
 using ImdbClone.Api.DTOs;
-using ImdbClone.Api.Enums;
 using ImdbClone.Api.Services;
 
 namespace ImdbClone.Api.Interfaces;
