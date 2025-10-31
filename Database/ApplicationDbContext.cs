@@ -1,5 +1,7 @@
 using ImdbClone.Api.DTOs;
 using ImdbClone.Api.Entities;
+using ImdbClone.Api.Enums;
+using ImdbClone.Api.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace ImdbClone.Api.Database
@@ -55,6 +57,15 @@ namespace ImdbClone.Api.Database
 
             mb.Entity<Title>().Property(t => t.TitleType).HasConversion<string>();
             mb.Entity<TitlePerson>().Property(tp => tp.Category).HasConversion<string>();
+
+            mb.Entity<TitlePerson>()
+                .Property(e => e.Category)
+                .HasConversion(
+                    v => StringHelper.ToSnakeCase(v.ToString()),
+                    v =>
+                        (PersonCategory)
+                            Enum.Parse(typeof(PersonCategory), StringHelper.ToPascalCase(v))
+                );
 
             // table names
             mb.Entity<Title>().ToTable("title");

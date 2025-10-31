@@ -25,4 +25,6 @@ public interface ITitleService
     );
 
     Task<int> GetTotalTitlesCountAsync();
+    Task<List<GenreDto>> GetGenresByTitleAsync(string tconst);
+    Task<List<CountryDto>> GetCountriesByTitleAsync(string tconst);
 }

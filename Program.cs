@@ -1,5 +1,4 @@
 using System.Text;
-using IMDB.DataService.Services;
 using ImdbClone.Api.Database;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
@@ -38,6 +37,7 @@ builder.Services.AddTransient<IGenreService, GenreService>();
 builder.Services.AddTransient<IEpisodeService, EpisodeService>();
 builder.Services.AddTransient<IRatingService, RatingService>();
 builder.Services.AddTransient<ITitleAliasService, TitleAliasService>();
+builder.Services.AddTransient<PaginationService>();
 
 var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
 
