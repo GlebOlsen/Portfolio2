@@ -33,8 +33,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddSingleton<Hashing>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<ITitleService, TitleService>();
-builder.Services.AddTransient<PaginationService>();
-builder.Services.AddTransient<ISearchService, SearchService>();
+builder.Services.AddTransient<ICountryService, CountryService>();
+builder.Services.AddTransient<IGenreService, GenreService>();
+builder.Services.AddTransient<IEpisodeService, EpisodeService>();
+builder.Services.AddTransient<IRatingService, RatingService>();
+builder.Services.AddTransient<ITitleAliasService, TitleAliasService>();
 
 var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
 

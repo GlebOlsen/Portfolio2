@@ -182,4 +182,22 @@ public class TitleService : ITitleService
     {
         return await _db.Titles.CountAsync();
     }
+
+    public async Task<List<CountryDto>> GetCountriesByTitleAsync(string tconst)
+    {
+        return await _db
+            .Titles.Where(t => t.Tconst == tconst)
+            .SelectMany(t => t.Countries)
+            .Select(c => new CountryDto { CountryId = c.CountryId, CountryName = c.CountryName })
+            .ToListAsync();
+    }
+
+    public async Task<List<GenreDto>> GetGenresByTitleAsync(string tconst)
+    {
+        return await _db
+            .Titles.Where(t => t.Tconst == tconst)
+            .SelectMany(t => t.Genres)
+            .Select(g => new GenreDto { GenreId = g.GenreId, GenreName = g.GenreName })
+            .ToListAsync();
+    }
 }
