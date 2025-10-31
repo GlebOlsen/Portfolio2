@@ -14,12 +14,15 @@ public class TitleAliasService : ITitleAliasService
         _db = db;
     }
 
-    public async Task<PaginatedResult<TitleAliasDto>> GetAllTitleAliasesAsync(int page = 0, int pageSize = 10)
+    public async Task<PaginatedResult<TitleAliasDto>> GetAllTitleAliasesAsync(
+        int page = 0,
+        int pageSize = 10
+    )
     {
         var total = await _db.TitleAliases.CountAsync();
 
-        var items = await _db.TitleAliases
-            .OrderBy(ta => ta.Tconst)
+        var items = await _db
+            .TitleAliases.OrderBy(ta => ta.Tconst)
             .ThenBy(ta => ta.Ordering)
             .Skip(page * pageSize)
             .Take(pageSize)
@@ -31,7 +34,7 @@ public class TitleAliasService : ITitleAliasService
                 Types = ta.Types,
                 Language = ta.Language,
                 Region = ta.Region,
-                Attributes = ta.Attributes
+                Attributes = ta.Attributes,
             })
             .ToListAsync();
 
@@ -40,14 +43,14 @@ public class TitleAliasService : ITitleAliasService
             Items = items,
             Total = total,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
     }
 
     public async Task<TitleAliasDto?> GetTitleAliasByIdAsync(string tconst, int ordering)
     {
-        return await _db.TitleAliases
-            .Where(ta => ta.Tconst == tconst && ta.Ordering == ordering)
+        return await _db
+            .TitleAliases.Where(ta => ta.Tconst == tconst && ta.Ordering == ordering)
             .Select(ta => new TitleAliasDto
             {
                 Tconst = ta.Tconst,
@@ -56,7 +59,7 @@ public class TitleAliasService : ITitleAliasService
                 Types = ta.Types,
                 Language = ta.Language,
                 Region = ta.Region,
-                Attributes = ta.Attributes
+                Attributes = ta.Attributes,
             })
             .FirstOrDefaultAsync();
     }

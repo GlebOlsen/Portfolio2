@@ -11,5 +11,5 @@ public enum TitleType
     TvShort,
     TvSpecial,
     Video,
-    VideoGame
+    VideoGame,
 }

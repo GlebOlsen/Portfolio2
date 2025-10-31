@@ -1,31 +1,35 @@
 using ImdbClone.Api.Interfaces;
+using ImdbClone.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
 
 [ApiController]
 [Route("title-aliases")]
-public class TitleAliasesController : ControllerBase
+public class TitleAliasesController(
+    ITitleAliasService titleAliasService,
+    PaginationService paginationService
+) : ControllerBase
 {
-    private readonly ITitleAliasService _titleAliasService;
-
-    public TitleAliasesController(ITitleAliasService titleAliasService)
-    {
-        _titleAliasService = titleAliasService;
-    }
-
     [HttpGet]
-    public async Task<IActionResult> GetAllTitleAliases([FromQuery] int? page, [FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAllTitleAliases(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize
+    )
     {
-        var result = await _titleAliasService.GetAllTitleAliasesAsync(page ?? 0, pageSize ?? 10);
+        var result = await titleAliasService.GetAllTitleAliasesAsync(page ?? 0, pageSize ?? 10);
+
+        var queryParams = new Dictionary<string, string?>();
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
         return Ok(result);
     }
 
     [HttpGet("{tconst}/{ordering}")]
     public async Task<IActionResult> GetTitleAliasById(string tconst, int ordering)
     {
-        var result = await _titleAliasService.GetTitleAliasByIdAsync(tconst, ordering);
-        
+        var result = await titleAliasService.GetTitleAliasByIdAsync(tconst, ordering);
+
         if (result == null)
             return NotFound();
 

@@ -14,26 +14,35 @@ namespace ImdbClone.Api.Controllers;
 
 [ApiController]
 [Route("users")]
-public class UsersController(IUserService userService, Hashing hashing, IConfiguration configuration) : ControllerBase
+public class UsersController(
+    IUserService userService,
+    Hashing hashing,
+    PaginationService paginationService,
+    IConfiguration configuration
+) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> SignUp(CreateUserDto dto)
     {
-        if (await userService.GetUserAsync(dto.Username) is not null || string.IsNullOrEmpty(dto.Password)) return BadRequest();
-        
+        if (
+            await userService.GetUserAsync(dto.Username) is not null
+            || string.IsNullOrEmpty(dto.Password)
+        )
+            return BadRequest();
+
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
 
         await userService.CreateUserAsync(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
         return Ok();
     }
-    
+
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginUserDto dto)
     {
         var user = await userService.GetUserAsync(dto.Username);
 
-        if(user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
+        if (user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
         {
             return BadRequest();
         }
@@ -41,7 +50,7 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.Username)
+            new Claim(ClaimTypes.Name, user.Username),
         };
 
         var secret = configuration["JWT_SECRET"];
@@ -63,13 +72,25 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
 
     [HttpGet("bookmark-title")]
     [Authorize]
-    public async Task<IActionResult> GetAllBookmarkedTitles([FromQuery] int? page, [FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAllBookmarkedTitles(
+        [FromQuery] int? page = 0,
+        [FromQuery] int? pageSize = 10
+    )
     {
         var userId = User.GetUserId();
 
-        if (userId is null) return BadRequest("Invalid user ID");
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
-        var result = await userService.GetAllBookmarkedTitlesAsync(userId.Value, page: page ?? 0, pageSize: pageSize ?? 10);
+        var result = await userService.GetAllBookmarkedTitlesAsync(
+            userId.Value,
+            page: page ?? 0,
+            pageSize: pageSize ?? 10
+        );
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 
         return Ok(result);
     }
@@ -80,12 +101,14 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     {
         var userId = User.GetUserId();
 
-        if (userId is null) return BadRequest("Invalid user ID");
-        
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
         var result = await userService.CreateBookmarkTitleAsync(userId.Value, dto.Tconst);
 
-        if (!result) return NotFound("Title not found");
-       
+        if (!result)
+            return NotFound("Title not found");
+
         return Ok();
     }
 
@@ -93,26 +116,36 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     [Authorize]
     public async Task<IActionResult> DeleteBookmarkTitle(DeleteBookmarkTitleDto dto)
     {
-        var userId = User.GetUserId();
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return BadRequest();
 
-        if (userId is null) return BadRequest("Invalid user ID");
-        
-        var result =  await userService.DeleteBookmarkTitleAsync(userId.Value, dto.Tconst);
+        var result = await userService.DeleteBookmarkTitleAsync(userId, dto.Tconst);
 
-        if (!result) return NotFound("Title bookmark not found");
-       
+        if (!result)
+            return NotFound("Title not found");
+
         return NoContent();
     }
-    
+
     [HttpGet("bookmark-person")]
     [Authorize]
-    public async Task<IActionResult> GetAllBookmarkedPersons([FromQuery] int? page, [FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAllBookmarkedPersons(
+        [FromQuery] int? page = 0,
+        [FromQuery] int? pageSize = 10
+    )
     {
-        var userId = User.GetUserId();
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return BadRequest();
 
-        if (userId is null) return BadRequest("Invalid user ID");
+        var result = await userService.GetAllBookmarkedPersonAsync(
+            userId,
+            page: page ?? 0,
+            pageSize: pageSize ?? 10
+        );
 
-        var result = await userService.GetAllBookmarkedPersonAsync(userId.Value, page: page ?? 0, pageSize: pageSize ?? 10);
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 
         return Ok(result);
     }
@@ -123,56 +156,29 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     {
         var userId = User.GetUserId();
 
-        if (userId is null) return BadRequest("Invalid user ID");
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
         var result = await userService.CreateBookmarkPersonAsync(userId.Value, dto.Nconst);
-
-        if (!result) return NotFound("Person not found");
+        if (!result)
+            return NotFound("Person not found");
 
         return Ok();
     }
-    
+
     [HttpDelete("bookmark-person")]
     [Authorize]
     public async Task<IActionResult> DeleteBookmarkPerson(CreateBookmarkPersonDto dto)
     {
         var userId = User.GetUserId();
 
-        if (userId is null) return BadRequest("Invalid user ID");
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
-        var result = await userService.DeleteBookmarkPersonAsync(userId.Value, dto.Nconst);
+        var result = await userService.DeleteBookmarkTitleAsync(userId.Value, dto.Nconst);
 
-        if (!result) return NotFound("Person bookmark not found");
-
-        return NoContent();
-    }
-
-    [HttpGet("rate-title")]
-    [Authorize]
-    public async Task<IActionResult> GetAllRatedTitles([FromQuery] int? page, [FromQuery] int? pageSize)
-    {
-        var userId = User.GetUserId();
-
-        if (userId is null) return BadRequest("Invalid user ID");
-        
-        var result = await userService.GetAllRatedTitlesAsync(userId.Value, page: page ?? 0, pageSize: pageSize ?? 10);
-
-        return Ok(result);
-    }
-
-    [HttpPost("rate-title")]
-    [Authorize]
-    public async Task<IActionResult> CreateTitleRating(CreateTitleRatingDto dto)
-    {
-        var userId = User.GetUserId();
-
-        if (userId is null) return BadRequest("Invalid user ID");
-
-        if (dto.Rating is < 1 or > 10) return BadRequest("Rating must be between 1-10");
-
-        var result = await userService.CreateTitleRatingAsync(userId.Value, dto.Tconst, dto.Rating);
-
-        if (!result) return NotFound("Title not found");
+        if (!result)
+            return NotFound("Title not found");
 
         return Ok();
     }
@@ -183,11 +189,13 @@ public class UsersController(IUserService userService, Hashing hashing, IConfigu
     {
         var userId = User.GetUserId();
 
-        if (userId is null) return BadRequest("Invalid user ID");
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
         var result = await userService.DeleteTitleRatingAsync(dto.Tconst, userId.Value);
 
-        if (!result) return NotFound("Rating not found");
+        if (!result)
+            return NotFound("Person not found");
 
         return NoContent();
     }

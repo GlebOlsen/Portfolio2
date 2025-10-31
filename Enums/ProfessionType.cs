@@ -1,4 +1,5 @@
 namespace ImdbClone.Api.Enums;
+
 public enum ProfessionType
 {
     ProductionManager,
@@ -46,5 +47,5 @@ public enum ProfessionType
     Editor,
     Writer,
     LocationManagement,
-    Soundtrack
+    Soundtrack,
 }

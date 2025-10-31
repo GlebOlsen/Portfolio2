@@ -1,11 +1,15 @@
+using ImdbClone.Api.DTOs;
 using ImdbClone.Api.Entities;
+using ImdbClone.Api.Enums;
+using ImdbClone.Api.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace ImdbClone.Api.Database
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options) { }
 
         public ApplicationDbContext() { }
 
@@ -15,16 +19,18 @@ namespace ImdbClone.Api.Database
         public DbSet<Genre> Genres => Set<Genre>();
         public DbSet<Profession> Professions => Set<Profession>();
         public DbSet<Country> Countries => Set<Country>();
-
         public DbSet<TitlePerson> TitlePeople => Set<TitlePerson>();
         public DbSet<Rating> Ratings => Set<Rating>();
         public DbSet<Episode> Episodes => Set<Episode>();
-
         public DbSet<ImdbUser> ImdbUsers => Set<ImdbUser>();
         public DbSet<UserRating> UserRatings => Set<UserRating>();
         public DbSet<BookmarkTitle> BookmarkTitles => Set<BookmarkTitle>();
         public DbSet<BookmarkPerson> BookmarkPeople => Set<BookmarkPerson>();
         public DbSet<SearchHistory> SearchHistories => Set<SearchHistory>();
+        public DbSet<TitleSearchResultDto> TitleSearchResults { get; set; }
+        public DbSet<PersonSearchResultDto> PersonSearchResults { get; set; }
+        public DbSet<PersonWithProfessionDto> PersonWithProfessionDto { get; set; }
+        public DbSet<WordFrequencyDto> WordFrequencies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -33,7 +39,8 @@ namespace ImdbClone.Api.Database
             var username = Environment.GetEnvironmentVariable("DB_USER");
             var password = Environment.GetEnvironmentVariable("DB_PASS");
 
-            var connectionString = $"Host={host};Database={database};Username={username};Password={password}";
+            var connectionString =
+                $"Host={host};Database={database};Username={username};Password={password}";
 
             if (!options.IsConfigured)
             {
@@ -43,6 +50,23 @@ namespace ImdbClone.Api.Database
 
         protected override void OnModelCreating(ModelBuilder mb)
         {
+            mb.Entity<TitleSearchResultDto>().HasNoKey().ToView(null);
+            mb.Entity<PersonSearchResultDto>().HasNoKey().ToView(null);
+            mb.Entity<PersonWithProfessionDto>().HasNoKey().ToView(null);
+            mb.Entity<WordFrequencyDto>().HasNoKey().ToView(null);
+
+            mb.Entity<Title>().Property(t => t.TitleType).HasConversion<string>();
+            mb.Entity<TitlePerson>().Property(tp => tp.Category).HasConversion<string>();
+
+            mb.Entity<TitlePerson>()
+                .Property(e => e.Category)
+                .HasConversion(
+                    v => StringHelper.ToSnakeCase(v.ToString()),
+                    v =>
+                        (PersonCategory)
+                            Enum.Parse(typeof(PersonCategory), StringHelper.ToPascalCase(v))
+                );
+
             // table names
             mb.Entity<Title>().ToTable("title");
             mb.Entity<TitleAlias>().ToTable("title_alias");
@@ -59,14 +83,6 @@ namespace ImdbClone.Api.Database
             mb.Entity<BookmarkPerson>().ToTable("bookmark_person");
             mb.Entity<SearchHistory>().ToTable("search_history");
 
-            mb.Entity<Title>()
-                .Property(t => t.TitleType)
-                .HasConversion<string>();
-
-            mb.Entity<TitlePerson>()
-                .Property(tp => tp.Category)
-                .HasConversion<string>();
-
             // pks
             mb.Entity<Title>().HasKey(t => t.Tconst);
             mb.Entity<Person>().HasKey(p => p.Nconst);
@@ -78,46 +94,40 @@ namespace ImdbClone.Api.Database
             mb.Entity<ImdbUser>().HasKey(u => u.UserId);
             mb.Entity<SearchHistory>().HasKey(sh => sh.HistoryId);
             mb.Entity<TitleAlias>().HasKey(t => new { t.Tconst, t.Ordering });
-            mb.Entity<TitlePerson>().HasKey(tp => new { tp.Tconst, tp.Nconst, tp.Ordering });
+            mb.Entity<TitlePerson>()
+                .HasKey(tp => new
+                {
+                    tp.Tconst,
+                    tp.Nconst,
+                    tp.Ordering,
+                });
             mb.Entity<UserRating>().HasKey(ur => new { ur.UserId, ur.Tconst });
             mb.Entity<BookmarkTitle>().HasKey(bt => new { bt.UserId, bt.Tconst });
             mb.Entity<BookmarkPerson>().HasKey(bp => new { bp.UserId, bp.Nconst });
 
             // fks and relationships
-            mb.Entity<TitleAlias>()
-                .HasOne(t => t.Title)
-                .WithMany()
-                .HasForeignKey(t => t.Tconst);
+            mb.Entity<TitleAlias>().HasOne(t => t.Title).WithMany().HasForeignKey(t => t.Tconst);
 
             mb.Entity<TitlePerson>()
                 .HasOne(tp => tp.Title)
                 .WithMany(t => t.TitlePeople)
-                .HasForeignKey(tp => tp.Tconst);
+                .HasForeignKey(tp => tp.Tconst)
+                .HasPrincipalKey(t => t.Tconst);
 
             mb.Entity<TitlePerson>()
                 .HasOne(tp => tp.Person)
                 .WithMany()
-                .HasForeignKey(tp => tp.Nconst);
-
-            mb.Entity<Episode>()
-                .HasOne(e => e.Title)
-                .WithMany()
-                .HasForeignKey(e => e.Tconst);
+                .HasForeignKey(tp => tp.Nconst)
+                .HasPrincipalKey(p => p.Nconst);
 
             mb.Entity<Episode>()
                 .HasOne(e => e.ParentTitle)
                 .WithMany()
                 .HasForeignKey(e => e.ParentTconst);
 
-            mb.Entity<Rating>()
-                .HasOne(r => r.Title)
-                .WithMany()
-                .HasForeignKey(r => r.Tconst);
+            mb.Entity<Rating>().HasOne(r => r.Title).WithMany().HasForeignKey(r => r.Tconst);
 
-            mb.Entity<UserRating>()
-                .HasOne(ur => ur.User)
-                .WithMany()
-                .HasForeignKey(ur => ur.UserId);
+            mb.Entity<UserRating>().HasOne(ur => ur.User).WithMany().HasForeignKey(ur => ur.UserId);
 
             mb.Entity<UserRating>()
                 .HasOne(ur => ur.Title)
@@ -149,33 +159,81 @@ namespace ImdbClone.Api.Database
                 .WithMany()
                 .HasForeignKey(sh => sh.UserId);
 
-            // many to many relationships
+            // many to many relationships + column mapping
             mb.Entity<Person>()
                 .HasMany(p => p.KnownForTitles)
                 .WithMany(t => t.KnownForByPeople)
-                .UsingEntity(j => j.ToTable("person_known_for_title"));
+                .UsingEntity(
+                    "person_known_for_title",
+                    l =>
+                        l.HasOne(typeof(Title))
+                            .WithMany()
+                            .HasForeignKey("tconst")
+                            .HasPrincipalKey(nameof(Title.Tconst)),
+                    r =>
+                        r.HasOne(typeof(Person))
+                            .WithMany()
+                            .HasForeignKey("nconst")
+                            .HasPrincipalKey(nameof(Person.Nconst)),
+                    j => j.HasKey("nconst", "tconst")
+                );
 
             mb.Entity<Person>()
                 .HasMany(p => p.Professions)
                 .WithMany(pr => pr.People)
-                .UsingEntity(j => j.ToTable("person_profession"));
+                .UsingEntity(
+                    "person_profession",
+                    l =>
+                        l.HasOne(typeof(Profession))
+                            .WithMany()
+                            .HasForeignKey("profession_id")
+                            .HasPrincipalKey(nameof(Profession.ProfessionId)),
+                    r =>
+                        r.HasOne(typeof(Person))
+                            .WithMany()
+                            .HasForeignKey("nconst")
+                            .HasPrincipalKey(nameof(Person.Nconst)),
+                    j => j.HasKey("profession_id", "nconst")
+                );
 
             mb.Entity<Title>()
                 .HasMany(t => t.Genres)
                 .WithMany(g => g.Titles)
-                .UsingEntity<Dictionary<string, object>>(
+                .UsingEntity(
                     "title_genre",
-                    j => j.HasOne<Genre>().WithMany().HasForeignKey("genre_id"),
-                    j => j.HasOne<Title>().WithMany().HasForeignKey("tconst")
+                    l =>
+                        l.HasOne(typeof(Genre))
+                            .WithMany()
+                            .HasForeignKey("genre_id")
+                            .HasPrincipalKey(nameof(Genre.GenreId)),
+                    r =>
+                        r.HasOne(typeof(Title))
+                            .WithMany()
+                            .HasForeignKey("tconst")
+                            .HasPrincipalKey(nameof(Title.Tconst)),
+                    j => j.HasKey("tconst", "genre_id")
                 );
 
             mb.Entity<Title>()
                 .HasMany(t => t.Countries)
                 .WithMany(c => c.Titles)
-                .UsingEntity<Dictionary<string, object>>(
+                .UsingEntity(
                     "title_country",
-                    j => j.HasOne<Country>().WithMany().HasForeignKey("country_id"),
-                    j => j.HasOne<Title>().WithMany().HasForeignKey("tconst")
+                    l =>
+                        l.HasOne(typeof(Country))
+                            .WithMany()
+                            .HasForeignKey("country_id")
+                            .HasPrincipalKey(nameof(Country.CountryId)),
+                    r =>
+                        r.HasOne(typeof(Title))
+                            .WithMany()
+                            .HasForeignKey("tconst")
+                            .HasPrincipalKey(nameof(Title.Tconst)),
+                    j =>
+                    {
+                        j.ToTable("title_country");
+                        j.HasKey("tconst", "country_id");
+                    }
                 );
         }
     }

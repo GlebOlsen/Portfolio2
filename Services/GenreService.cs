@@ -18,15 +18,11 @@ public class GenreService : IGenreService
     {
         var total = await _db.Genres.CountAsync();
 
-        var items = await _db.Genres
-            .OrderBy(g => g.GenreName)
+        var items = await _db
+            .Genres.OrderBy(g => g.GenreName)
             .Skip(page * pageSize)
             .Take(pageSize)
-            .Select(g => new GenreDto
-            {
-                GenreId = g.GenreId,
-                GenreName = g.GenreName
-            })
+            .Select(g => new GenreDto { GenreId = g.GenreId, GenreName = g.GenreName })
             .ToListAsync();
 
         return new PaginatedResult<GenreDto>
@@ -34,19 +30,15 @@ public class GenreService : IGenreService
             Items = items,
             Total = total,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
     }
 
     public async Task<GenreDto?> GetGenreByIdAsync(Guid genreId)
     {
-        return await _db.Genres
-            .Where(g => g.GenreId == genreId)
-            .Select(g => new GenreDto
-            {
-                GenreId = g.GenreId,
-                GenreName = g.GenreName
-            })
+        return await _db
+            .Genres.Where(g => g.GenreId == genreId)
+            .Select(g => new GenreDto { GenreId = g.GenreId, GenreName = g.GenreName })
             .FirstOrDefaultAsync();
     }
 }

@@ -14,12 +14,15 @@ public class RatingService : IRatingService
         _db = db;
     }
 
-    public async Task<PaginatedResult<RatingDto>> GetAllRatingsAsync(int page = 0, int pageSize = 10)
+    public async Task<PaginatedResult<RatingDto>> GetAllRatingsAsync(
+        int page = 0,
+        int pageSize = 10
+    )
     {
         var total = await _db.Ratings.CountAsync();
 
-        var items = await _db.Ratings
-            .OrderByDescending(r => r.AvgRating)
+        var items = await _db
+            .Ratings.OrderByDescending(r => r.AvgRating)
             .Skip(page * pageSize)
             .Take(pageSize)
             .Select(r => new RatingDto
@@ -28,7 +31,7 @@ public class RatingService : IRatingService
                 AvgRating = r.AvgRating,
                 NumVotes = r.NumVotes,
                 MetaScore = r.MetaScore,
-                TitleName = r.Title != null ? r.Title.PrimaryTitle : null
+                TitleName = r.Title != null ? r.Title.PrimaryTitle : null,
             })
             .ToListAsync();
 
@@ -37,21 +40,21 @@ public class RatingService : IRatingService
             Items = items,
             Total = total,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
     }
 
     public async Task<RatingDto?> GetRatingByIdAsync(string tconst)
     {
-        return await _db.Ratings
-            .Where(r => r.Tconst == tconst)
+        return await _db
+            .Ratings.Where(r => r.Tconst == tconst)
             .Select(r => new RatingDto
             {
                 Tconst = r.Tconst,
                 AvgRating = r.AvgRating,
                 NumVotes = r.NumVotes,
                 MetaScore = r.MetaScore,
-                TitleName = r.Title != null ? r.Title.PrimaryTitle : null
+                TitleName = r.Title != null ? r.Title.PrimaryTitle : null,
             })
             .FirstOrDefaultAsync();
     }

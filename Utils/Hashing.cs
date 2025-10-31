@@ -33,8 +33,10 @@ public class Hashing
     public bool Verify(string loginPassword, string hashedRegisteredPassword, string saltString)
     {
         string hashedLoginPassword = HashSHA256(loginPassword, saltString);
-        if (hashedRegisteredPassword == hashedLoginPassword) return true;
-        else return false;
+        if (hashedRegisteredPassword == hashedLoginPassword)
+            return true;
+        else
+            return false;
     }
 
     // hashSHA256 is the "workhorse" --- the actual hashing
