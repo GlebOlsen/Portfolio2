@@ -99,10 +99,12 @@ public class UsersController(
     [Authorize]
     public async Task<IActionResult> CreateBookmarkTitle(CreateBookmarkTitleDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.CreateBookmarkTitleAsync(userId, dto.Tconst);
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.CreateBookmarkTitleAsync(userId.Value, dto.Tconst);
 
         if (!result)
             return NotFound("Title not found");
