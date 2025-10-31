@@ -14,12 +14,15 @@ public class EpisodeService : IEpisodeService
         _db = db;
     }
 
-    public async Task<PaginatedResult<EpisodeDto>> GetAllEpisodesAsync(int page = 0, int pageSize = 10)
+    public async Task<PaginatedResult<EpisodeDto>> GetAllEpisodesAsync(
+        int page = 0,
+        int pageSize = 10
+    )
     {
         var total = await _db.Episodes.CountAsync();
 
-        var items = await _db.Episodes
-            .OrderBy(e => e.Tconst)
+        var items = await _db
+            .Episodes.OrderBy(e => e.Tconst)
             .Skip(page * pageSize)
             .Take(pageSize)
             .Select(e => new EpisodeDto
@@ -28,7 +31,7 @@ public class EpisodeService : IEpisodeService
                 ParentTconst = e.ParentTconst,
                 EpisodeNumber = e.EpisodeNumber,
                 SeasonNumber = e.SeasonNumber,
-                ParentTitle = e.ParentTitle != null ? e.ParentTitle.PrimaryTitle : null
+                ParentTitle = e.ParentTitle != null ? e.ParentTitle.PrimaryTitle : null,
             })
             .ToListAsync();
 
@@ -37,21 +40,21 @@ public class EpisodeService : IEpisodeService
             Items = items,
             Total = total,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
     }
 
     public async Task<EpisodeDto?> GetEpisodeByIdAsync(string tconst)
     {
-        return await _db.Episodes
-            .Where(e => e.Tconst == tconst)
+        return await _db
+            .Episodes.Where(e => e.Tconst == tconst)
             .Select(e => new EpisodeDto
             {
                 Tconst = e.Tconst,
                 ParentTconst = e.ParentTconst,
                 EpisodeNumber = e.EpisodeNumber,
                 SeasonNumber = e.SeasonNumber,
-                ParentTitle = e.ParentTitle != null ? e.ParentTitle.PrimaryTitle : null
+                ParentTitle = e.ParentTitle != null ? e.ParentTitle.PrimaryTitle : null,
             })
             .FirstOrDefaultAsync();
     }
