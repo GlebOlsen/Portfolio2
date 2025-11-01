@@ -4,7 +4,7 @@ using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace IMDB.DataService.Services;
+namespace ImdbClone.DataService.Services;
 
 public class SearchService : ISearchService
 {

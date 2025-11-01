@@ -175,7 +175,7 @@ public class UsersController(
         if (userId is null)
             return BadRequest("Invalid user ID");
 
-        var result = await userService.DeleteBookmarkTitleAsync(userId.Value, dto.Nconst);
+        var result = await userService.DeleteBookmarkPersonAsync(userId.Value, dto.Nconst);
 
         if (!result)
             return NotFound("Title not found");
@@ -198,5 +198,22 @@ public class UsersController(
             return NotFound("Person not found");
 
         return NoContent();
+    }
+
+    [HttpPost("rate-title")]
+    [Authorize]
+    public async Task<IActionResult> CreateTitleRating(CreateTitleRatingDto dto)
+    {
+        var userId = User.GetUserId();
+
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.CreateTitleRatingAsync(userId.Value, dto.Tconst, dto.Rating);
+
+        if (!result)
+            return NotFound("Title not found");
+
+        return Ok();
     }
 }

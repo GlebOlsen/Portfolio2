@@ -2,6 +2,7 @@ using System.Text;
 using ImdbClone.Api.Database;
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using ImdbClone.DataService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -37,6 +38,7 @@ builder.Services.AddTransient<IGenreService, GenreService>();
 builder.Services.AddTransient<IEpisodeService, EpisodeService>();
 builder.Services.AddTransient<IRatingService, RatingService>();
 builder.Services.AddTransient<ITitleAliasService, TitleAliasService>();
+builder.Services.AddTransient<ISearchService, SearchService>();
 builder.Services.AddTransient<PaginationService>();
 
 var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
