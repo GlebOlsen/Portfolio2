@@ -15,7 +15,7 @@ public class Rating
     [Column("num_votes")]
     public int? NumVotes { get; set; }
 
-    [Column("metascore")]
+    [Column("meta_score")]
     public int? MetaScore { get; set; }
 
     [ForeignKey("Tconst")]

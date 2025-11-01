@@ -6,7 +6,7 @@ namespace ImdbClone.Api.Entities;
 public class BookmarkPerson
 {
     [Key]
-    [Column("tconst")]
+    [Column("user_id")]
     public Guid UserId { get; set; }
 
     [Column("nconst")]
