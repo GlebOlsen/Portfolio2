@@ -116,10 +116,12 @@ public class UsersController(
     [Authorize]
     public async Task<IActionResult> DeleteBookmarkTitle(DeleteBookmarkTitleDto dto)
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return BadRequest();
+        var userId = User.GetUserId();
 
-        var result = await userService.DeleteBookmarkTitleAsync(userId, dto.Tconst);
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.DeleteBookmarkTitleAsync(userId.Value, dto.Tconst);
 
         if (!result)
             return NotFound("Title not found");
@@ -134,11 +136,13 @@ public class UsersController(
         [FromQuery] int? pageSize = 10
     )
     {
-        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return BadRequest();
+        var userId = User.GetUserId();
+
+        if (userId is null)
+            return BadRequest("Invalid user ID");
 
         var result = await userService.GetAllBookmarkedPersonAsync(
-            userId,
+            userId.Value,
             page: page ?? 0,
             pageSize: pageSize ?? 10
         );
@@ -168,7 +172,7 @@ public class UsersController(
 
     [HttpDelete("bookmark-person")]
     [Authorize]
-    public async Task<IActionResult> DeleteBookmarkPerson(CreateBookmarkPersonDto dto)
+    public async Task<IActionResult> DeleteBookmarkPerson(DeleteBookmarkPersonDto dto)
     {
         var userId = User.GetUserId();
 
@@ -181,6 +185,31 @@ public class UsersController(
             return NotFound("Title not found");
 
         return Ok();
+    }
+    
+    [HttpGet("rate-title")]
+    [Authorize]
+    public async Task<IActionResult> GetAllRatedTitle(
+        [FromQuery] int? page = 0,
+        [FromQuery] int? pageSize = 10
+    )
+    {
+        var userId = User.GetUserId();
+        
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.GetAllRatedTitlesAsync(
+            userId.Value,
+            page: page ?? 0,
+            pageSize: pageSize ?? 10
+        );
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
+        return Ok(result);
     }
 
     [HttpDelete("rate-title")]
