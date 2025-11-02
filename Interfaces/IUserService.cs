@@ -1,3 +1,4 @@
+using ImdbClone.Api.Controllers;
 using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Entities;
@@ -37,4 +38,12 @@ public interface IUserService
     );
     Task<bool> CreateTitleRatingAsync(Guid userId, string tconst, int rating);
     Task<bool> DeleteTitleRatingAsync(string tconst, Guid userId);
+
+    Task<PaginatedResult<SearchHistoryListDto>> GetAllSearchHistoryAsync(
+        Guid userId,
+        int page = 0,
+        int pageSize = 10
+    );
+
+    Task<bool> DeleteAllSearchHistoryAsync(Guid userId);
 }

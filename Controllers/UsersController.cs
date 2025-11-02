@@ -245,4 +245,46 @@ public class UsersController(
 
         return Ok();
     }
+    
+    [HttpGet("search-history")]
+    [Authorize]
+    public async Task<IActionResult> GetAllSearchHistory(
+        [FromQuery] int? page = 0,
+        [FromQuery] int? pageSize = 10
+    )
+    {
+        var userId = User.GetUserId();
+        
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.GetAllSearchHistoryAsync(
+            userId.Value,
+            page: page ?? 0,
+            pageSize: pageSize ?? 10
+        );
+
+        var queryParams = new Dictionary<string, string?>();
+
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+
+        return Ok(result);
+    }
+    
+    [HttpDelete("search-history")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAllSearchHistory()
+    {
+        var userId = User.GetUserId();
+
+        if (userId is null)
+            return BadRequest("Invalid user ID");
+
+        var result = await userService.DeleteAllSearchHistoryAsync(userId.Value);
+
+        if (!result)
+            return NotFound("Search history is empty.");
+
+        return NoContent();
+    }
 }
