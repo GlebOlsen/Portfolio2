@@ -189,7 +189,7 @@ public class UsersController(
     
     [HttpGet("rate-title")]
     [Authorize]
-    public async Task<IActionResult> GetAllRatedTitle(
+    public async Task<IActionResult> GetAllRatedTitles(
         [FromQuery] int? page = 0,
         [FromQuery] int? pageSize = 10
     )
