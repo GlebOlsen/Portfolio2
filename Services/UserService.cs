@@ -1,3 +1,4 @@
+using ImdbClone.Api.Controllers;
 using ImdbClone.Api.Database;
 using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
@@ -248,6 +249,51 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
         await dbContext.Database.ExecuteSqlRawAsync(
             "SELECT delete_user_rating({0}, {1})",
             tconst,
+            userId
+        );
+        return true;
+    }
+    
+    public async Task<PaginatedResult<SearchHistoryListDto>> GetAllSearchHistoryAsync(
+        Guid userId,
+        int page = 0,
+        int pageSize = 10
+    )
+    {
+        var total = await dbContext.SearchHistories.CountAsync(sh => sh.UserId == userId);
+
+        var items = await dbContext
+            .SearchHistories.Where(sh => sh.UserId == userId)
+            .Select(sh => new SearchHistoryListDto()
+            {
+                SearchDate = sh.SearchDate,
+                SearchParameters = sh.SearchParameters
+            })
+            .OrderByDescending(sh => sh.SearchDate)
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<SearchHistoryListDto>
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            PageSize = pageSize,
+        };
+    }
+    
+    public async Task<bool> DeleteAllSearchHistoryAsync(Guid userId)
+    {
+        var searchHistoryExists = await dbContext.SearchHistories.AnyAsync(sh => 
+                sh.UserId == userId
+        );
+
+        if (!searchHistoryExists)
+            return false;
+
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "SELECT clear_search_history({0})",
             userId
         );
         return true;

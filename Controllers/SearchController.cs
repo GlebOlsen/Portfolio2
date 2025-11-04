@@ -1,5 +1,6 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using ImdbClone.Api.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
@@ -11,7 +12,6 @@ public class SearchController(ISearchService searchService, PaginationService pa
 {
     [HttpGet("structured-search")]
     public async Task<IActionResult> StructuredSearch(
-        Guid userId,
         string? title,
         string? plot,
         string? characters,
@@ -20,6 +20,8 @@ public class SearchController(ISearchService searchService, PaginationService pa
         [FromQuery] int pageSize = 10
     )
     {
+        var userId = User.GetUserId();
+        
         var result = await searchService.StructuredSearchAsync(
             userId,
             title,
@@ -30,7 +32,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
             pageSize
         );
 
-        var queryParams = new Dictionary<string, string?> { { "userId", userId.ToString() } };
+        var queryParams = new Dictionary<string, string?>();
 
         if (!string.IsNullOrEmpty(title))
             queryParams["title"] = title;
@@ -53,7 +55,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
         [FromQuery] int pageSize = 10
     )
     {
-        var result = await searchService.StringSearch(query, page, pageSize);
+        var userId = User.GetUserId();
+        
+        var result = await searchService.StringSearch(userId, query, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "query", query } };
 
@@ -64,17 +68,17 @@ public class SearchController(ISearchService searchService, PaginationService pa
 
     [HttpGet("find-names")]
     public async Task<IActionResult> FindNames(
-        Guid userId,
         string query,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 10
     )
     {
+        var userId = User.GetUserId();
+        
         var result = await searchService.FindNames(userId, query, page, pageSize);
 
         var queryParams = new Dictionary<string, string?>
         {
-            { "userId", userId.ToString() },
             { "query", query },
         };
 
@@ -85,13 +89,14 @@ public class SearchController(ISearchService searchService, PaginationService pa
 
     [HttpGet("find-names-by-profession")]
     public async Task<IActionResult> FindNamesByProfession(
-        Guid userId,
         string name,
         string? profession = null,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 10
     )
     {
+        var userId = User.GetUserId();
+        
         var result = await searchService.FindNamesByProfession(
             userId,
             name,
@@ -100,7 +105,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
             pageSize
         );
 
-        var queryParams = new Dictionary<string, string?> { { "userId", userId.ToString() } };
+        var queryParams = new Dictionary<string, string?>();
 
         if (!string.IsNullOrEmpty(profession))
             queryParams["profession"] = profession;
@@ -125,7 +130,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var result = await searchService.SearchTitlesExact(wordsList, page, pageSize);
+        var userId = User.GetUserId();
+
+        var result = await searchService.SearchTitlesExact(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
@@ -148,7 +155,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var result = await searchService.SearchTitlesBestMatch(wordsList, page, pageSize);
+        var userId = User.GetUserId();
+        
+        var result = await searchService.SearchTitlesBestMatch(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
@@ -170,8 +179,10 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(w => w.Trim())
             .ToList();
+        
+        var userId = User.GetUserId();
 
-        var result = await searchService.SearchWordsToWords(wordsList, page, pageSize);
+        var result = await searchService.SearchWordsToWords(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
