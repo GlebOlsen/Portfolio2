@@ -46,4 +46,6 @@ public interface IUserService
     );
 
     Task<bool> DeleteAllSearchHistoryAsync(Guid userId);
+
+    string GenerateJwtToken(UserDto user);
 }

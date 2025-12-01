@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using ImdbClone.Api.Controllers;
 using ImdbClone.Api.Database;
 using ImdbClone.Api.DTOs;
@@ -5,10 +8,12 @@ using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Entities;
 using ImdbClone.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ImdbClone.Api.Services;
 
-public class UserService(ApplicationDbContext dbContext) : IUserService
+public class UserService(ApplicationDbContext dbContext, IConfiguration configuration)
+    : IUserService
 {
     public async Task<UserDto?> GetUserAsync(string? username)
     {
@@ -253,7 +258,7 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
         );
         return true;
     }
-    
+
     public async Task<PaginatedResult<SearchHistoryListDto>> GetAllSearchHistoryAsync(
         Guid userId,
         int page = 0,
@@ -267,7 +272,7 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
             .Select(sh => new SearchHistoryListDto()
             {
                 SearchDate = sh.SearchDate,
-                SearchParameters = sh.SearchParameters
+                SearchParameters = sh.SearchParameters,
             })
             .OrderByDescending(sh => sh.SearchDate)
             .Skip(page * pageSize)
@@ -282,20 +287,39 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
             PageSize = pageSize,
         };
     }
-    
+
     public async Task<bool> DeleteAllSearchHistoryAsync(Guid userId)
     {
-        var searchHistoryExists = await dbContext.SearchHistories.AnyAsync(sh => 
-                sh.UserId == userId
+        var searchHistoryExists = await dbContext.SearchHistories.AnyAsync(sh =>
+            sh.UserId == userId
         );
 
         if (!searchHistoryExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
-            "SELECT clear_search_history({0})",
-            userId
-        );
+        await dbContext.Database.ExecuteSqlRawAsync("SELECT clear_search_history({0})", userId);
         return true;
+    }
+
+    public string GenerateJwtToken(UserDto user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+        };
+
+        var secret = configuration["JWT_SECRET"];
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+        var token = new JwtSecurityToken(
+            claims: claims,
+            expires: DateTime.Now.AddDays(4),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

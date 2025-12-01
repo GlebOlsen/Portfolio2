@@ -21,7 +21,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
     )
     {
         var userId = User.GetUserId();
-        
+
         var result = await searchService.StructuredSearchAsync(
             userId,
             title,
@@ -56,7 +56,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
     )
     {
         var userId = User.GetUserId();
-        
+
         var result = await searchService.StringSearch(userId, query, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "query", query } };
@@ -74,13 +74,10 @@ public class SearchController(ISearchService searchService, PaginationService pa
     )
     {
         var userId = User.GetUserId();
-        
+
         var result = await searchService.FindNames(userId, query, page, pageSize);
 
-        var queryParams = new Dictionary<string, string?>
-        {
-            { "query", query },
-        };
+        var queryParams = new Dictionary<string, string?> { { "query", query } };
 
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 
@@ -96,7 +93,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
     )
     {
         var userId = User.GetUserId();
-        
+
         var result = await searchService.FindNamesByProfession(
             userId,
             name,
@@ -156,7 +153,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .ToList();
 
         var userId = User.GetUserId();
-        
+
         var result = await searchService.SearchTitlesBestMatch(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
@@ -179,7 +176,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(w => w.Trim())
             .ToList();
-        
+
         var userId = User.GetUserId();
 
         var result = await searchService.SearchWordsToWords(userId, wordsList, page, pageSize);
