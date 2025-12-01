@@ -253,7 +253,7 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
         );
         return true;
     }
-    
+
     public async Task<PaginatedResult<SearchHistoryListDto>> GetAllSearchHistoryAsync(
         Guid userId,
         int page = 0,
@@ -282,10 +282,10 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
             PageSize = pageSize,
         };
     }
-    
+
     public async Task<bool> DeleteAllSearchHistoryAsync(Guid userId)
     {
-        var searchHistoryExists = await dbContext.SearchHistories.AnyAsync(sh => 
+        var searchHistoryExists = await dbContext.SearchHistories.AnyAsync(sh =>
                 sh.UserId == userId
         );
 
@@ -296,6 +296,19 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
             "SELECT clear_search_history({0})",
             userId
         );
+        return true;
+    }
+
+    public async Task<bool> DeleteUserAsync(Guid userId)
+    {
+        var user = await dbContext.ImdbUsers.FindAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        dbContext.ImdbUsers.Remove(user);
+        await dbContext.SaveChangesAsync();
         return true;
     }
 }

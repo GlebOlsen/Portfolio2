@@ -70,6 +70,25 @@ public class UsersController(
         return Ok(new { user.Username, token = jwt });
     }
 
+    [HttpDelete]
+    [Authorize]
+    public async Task<IActionResult> DeleteUser()
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await userService.DeleteUserAsync(userId.Value);
+        if (!result)
+        {
+            return NotFound();
+        }
+
+        return Ok();
+    }
+
     [HttpGet("bookmark-title")]
     [Authorize]
     public async Task<IActionResult> GetAllBookmarkedTitles(
@@ -186,7 +205,7 @@ public class UsersController(
 
         return Ok();
     }
-    
+
     [HttpGet("rate-title")]
     [Authorize]
     public async Task<IActionResult> GetAllRatedTitles(
@@ -195,7 +214,7 @@ public class UsersController(
     )
     {
         var userId = User.GetUserId();
-        
+
         if (userId is null)
             return BadRequest("Invalid user ID");
 
@@ -245,7 +264,7 @@ public class UsersController(
 
         return Ok();
     }
-    
+
     [HttpGet("search-history")]
     [Authorize]
     public async Task<IActionResult> GetAllSearchHistory(
@@ -254,7 +273,7 @@ public class UsersController(
     )
     {
         var userId = User.GetUserId();
-        
+
         if (userId is null)
             return BadRequest("Invalid user ID");
 
@@ -270,7 +289,7 @@ public class UsersController(
 
         return Ok(result);
     }
-    
+
     [HttpDelete("search-history")]
     [Authorize]
     public async Task<IActionResult> DeleteAllSearchHistory()

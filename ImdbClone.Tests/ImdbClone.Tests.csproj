@@ -19,4 +19,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ImdbClone.Api.csproj" />
+  </ItemGroup>
+
 </Project>
