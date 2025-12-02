@@ -1,6 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Interfaces;
@@ -8,7 +5,6 @@ using ImdbClone.Api.Services;
 using ImdbClone.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ImdbClone.Api.Controllers;
 
@@ -21,7 +17,7 @@ public class UsersController(
     IConfiguration configuration
 ) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("signup")]
     public async Task<IActionResult> SignUp(CreateUserDto dto)
     {
         if (
@@ -31,10 +27,14 @@ public class UsersController(
             return BadRequest();
 
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
-
         await userService.CreateUserAsync(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
-        return Ok();
+        var user = await userService.GetUserAsync(dto.Username);
+        if (user == null)
+            return Unauthorized(new { message = "User creation failed" });
+
+        var jwt = userService.GenerateJwtToken(user);
+        return Ok(new { user.Username, token = jwt });
     }
 
     [HttpPost("login")]
@@ -43,30 +43,9 @@ public class UsersController(
         var user = await userService.GetUserAsync(dto.Username);
 
         if (user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
-        {
-            return BadRequest();
-        }
+            return Unauthorized(new { message = "Invalid username or password" });
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-        };
-
-        var secret = configuration["JWT_SECRET"];
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.Now.AddDays(4),
-            signingCredentials: creds
-        );
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
+        var jwt = userService.GenerateJwtToken(user);
         return Ok(new { user.Username, token = jwt });
     }
 

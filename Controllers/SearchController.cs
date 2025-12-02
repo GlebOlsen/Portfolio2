@@ -77,10 +77,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
 
         var result = await searchService.FindNames(userId, query, page, pageSize);
 
-        var queryParams = new Dictionary<string, string?>
-        {
-            { "query", query },
-        };
+        var queryParams = new Dictionary<string, string?> { { "query", query } };
 
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
 

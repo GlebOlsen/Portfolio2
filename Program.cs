@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddHttpContextAccessor();
 
@@ -39,7 +40,18 @@ builder.Services.AddTransient<IEpisodeService, EpisodeService>();
 builder.Services.AddTransient<IRatingService, RatingService>();
 builder.Services.AddTransient<ITitleAliasService, TitleAliasService>();
 builder.Services.AddTransient<ISearchService, SearchService>();
+builder.Services.AddTransient<IPersonService, PersonService>();
 builder.Services.AddTransient<PaginationService>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+        }
+    );
+});
 
 var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
 
@@ -65,6 +77,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();
