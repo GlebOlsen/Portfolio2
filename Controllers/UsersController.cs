@@ -49,6 +49,25 @@ public class UsersController(
         return Ok(new { user.Username, token = jwt });
     }
 
+    [HttpDelete]
+    [Authorize]
+    public async Task<IActionResult> DeleteUser()
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await userService.DeleteUserAsync(userId.Value);
+        if (!result)
+        {
+            return NotFound();
+        }
+
+        return Ok();
+    }
+
     [HttpGet("bookmark-title")]
     [Authorize]
     public async Task<IActionResult> GetAllBookmarkedTitles(

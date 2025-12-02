@@ -301,6 +301,19 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         return true;
     }
 
+    public async Task<bool> DeleteUserAsync(Guid userId)
+    {
+        var user = await dbContext.ImdbUsers.FindAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        dbContext.ImdbUsers.Remove(user);
+        await dbContext.SaveChangesAsync();
+        return true;
+    }
+
     public string GenerateJwtToken(UserDto user)
     {
         var claims = new List<Claim>
