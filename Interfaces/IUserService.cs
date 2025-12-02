@@ -9,7 +9,7 @@ namespace ImdbClone.Api.Interfaces;
 public interface IUserService
 {
     Task<UserDto?> GetUserAsync(string? username);
-    Task<UserDto?> GetUserAsync(Guid id);
+    Task<UserDto?> GetUserByIdAsync(Guid id);
     Task<ImdbUser> CreateUserAsync(
         string name,
         string username,
@@ -47,6 +47,8 @@ public interface IUserService
 
     Task<bool> DeleteAllSearchHistoryAsync(Guid userId);
     Task<bool> DeleteUserAsync(Guid userId);
+
+    Task<UserDto?> UpdateUsernameAsync(Guid userId, string username);
 
     string GenerateJwtToken(UserDto user);
 }

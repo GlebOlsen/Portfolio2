@@ -29,17 +29,13 @@ public class UserEndpointsTests
             Name = "Test User",
             Username = username,
             Email = email,
-            Password = password
+            Password = password,
         };
 
         var registerResponse = await client.PostAsJsonAsync("/users", createUserDto);
         Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
 
-        var loginDto = new LoginUserDto
-        {
-            Username = username,
-            Password = password
-        };
+        var loginDto = new LoginUserDto { Username = username, Password = password };
 
         var loginResponse = await client.PostAsJsonAsync("/users/login", loginDto);
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
@@ -62,7 +58,7 @@ public class UserEndpointsTests
             Name = "Test User",
             Username = username,
             Email = email,
-            Password = password
+            Password = password,
         };
 
         var response = await client.PostAsJsonAsync("/users", createUserDto);
@@ -101,7 +97,7 @@ public class UserEndpointsTests
         var deleteDto = new DeleteBookmarkTitleDto { Tconst = tconst };
         var request = new HttpRequestMessage(HttpMethod.Delete, "/users/bookmark-title")
         {
-            Content = JsonContent.Create(deleteDto)
+            Content = JsonContent.Create(deleteDto),
         };
         var deleteResponse = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
@@ -122,7 +118,7 @@ public class UserEndpointsTests
         var deleteDto = new DeleteBookmarkPersonDto { Nconst = nconst };
         var request = new HttpRequestMessage(HttpMethod.Delete, "/users/bookmark-person")
         {
-            Content = JsonContent.Create(deleteDto)
+            Content = JsonContent.Create(deleteDto),
         };
         var deleteResponse = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
@@ -144,7 +140,7 @@ public class UserEndpointsTests
         var deleteDto = new DeleteTitleRatingDto { Tconst = tconst };
         var request = new HttpRequestMessage(HttpMethod.Delete, "/users/rate-title")
         {
-            Content = JsonContent.Create(deleteDto)
+            Content = JsonContent.Create(deleteDto),
         };
         var deleteResponse = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);

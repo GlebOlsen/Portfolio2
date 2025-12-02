@@ -38,7 +38,7 @@ public class UsersController(
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginUserDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
     {
         var user = await userService.GetUserAsync(dto.Username);
 
@@ -47,6 +47,27 @@ public class UsersController(
 
         var jwt = userService.GenerateJwtToken(user);
         return Ok(new { user.Username, token = jwt });
+    }
+
+    [HttpPatch("update-username")]
+    [Authorize]
+    public async Task<IActionResult> UpdateUsername([FromBody] UpdateUsernameDto dto)
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await userService.UpdateUsernameAsync(userId.Value, dto.Username);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        var jwt = userService.GenerateJwtToken(result);
+
+        return Ok(new { result.Username, jwt });
     }
 
     [HttpDelete]

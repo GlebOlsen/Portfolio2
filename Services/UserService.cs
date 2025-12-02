@@ -33,7 +33,7 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         };
     }
 
-    public async Task<UserDto?> GetUserAsync(Guid id)
+    public async Task<UserDto?> GetUserByIdAsync(Guid id)
     {
         var user = await dbContext.ImdbUsers.FirstOrDefaultAsync(u => u.UserId == id);
 
@@ -69,6 +69,26 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         await dbContext.ImdbUsers.AddAsync(user);
         await dbContext.SaveChangesAsync();
         return user;
+    }
+
+    public async Task<UserDto?> UpdateUsernameAsync(Guid userId, string username)
+    {
+        var user = await dbContext.ImdbUsers.FindAsync(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        user.Username = username;
+        await dbContext.SaveChangesAsync();
+
+        return new UserDto
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Name = user.Name,
+            Email = user.Email,
+        };
     }
 
     public async Task<PaginatedResult<BookmarkTitleListDto>> GetAllBookmarkedTitlesAsync(
