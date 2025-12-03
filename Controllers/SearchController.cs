@@ -62,8 +62,6 @@ public class SearchController(ISearchService searchService, PaginationService pa
         [FromQuery] int pageSize = 10
     )
     {
-        var userId = User.GetUserId();
-
         var result = await searchService.StringSearch(query, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "query", query } };
@@ -135,8 +133,6 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var userId = User.GetUserId();
-
         var result = await searchService.SearchTitlesExact(wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
@@ -160,8 +156,6 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var userId = User.GetUserId();
-
         var result = await searchService.SearchTitlesBestMatch(wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
@@ -184,8 +178,6 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(w => w.Trim())
             .ToList();
-
-        var userId = User.GetUserId();
 
         var result = await searchService.SearchWordsToWords(wordsList, page, pageSize);
 
