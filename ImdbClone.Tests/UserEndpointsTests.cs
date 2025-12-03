@@ -8,44 +8,8 @@ using Xunit;
 
 namespace ImdbClone.Tests;
 
-public class UserEndpointsTests
+public class UserEndpointsTests : BaseIntegrationTest
 {
-    private readonly HttpClient client;
-    private const string BaseUrl = "http://localhost:5082";
-
-    public UserEndpointsTests()
-    {
-        client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-    }
-
-    private async Task<(string Token, string Username)> RegisterAndLogin()
-    {
-        var username = $"testuser_{Guid.NewGuid()}";
-        var password = "Password123!";
-        var email = $"{username}@example.com";
-
-        var createUserDto = new CreateUserDto
-        {
-            Name = "Test User",
-            Username = username,
-            Email = email,
-            Password = password,
-        };
-
-        var registerResponse = await client.PostAsJsonAsync("/users", createUserDto);
-        Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
-
-        var loginDto = new LoginUserDto { Username = username, Password = password };
-
-        var loginResponse = await client.PostAsJsonAsync("/users/login", loginDto);
-        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
-
-        var loginResult = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var token = loginResult.GetProperty("token").GetString();
-
-        return (token ?? string.Empty, username);
-    }
-
     [Fact]
     public async Task Register_ReturnsSuccess()
     {
@@ -61,7 +25,7 @@ public class UserEndpointsTests
             Password = password,
         };
 
-        var response = await client.PostAsJsonAsync("/users", createUserDto);
+        var response = await client.PostAsJsonAsync("/users/signup", createUserDto);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 

@@ -9,21 +9,22 @@ namespace ImdbClone.DataService.Services;
 public class SearchService : ISearchService
 {
     private readonly ApplicationDbContext _db;
+    private readonly IUsersService _userService;
 
-    public SearchService(ApplicationDbContext db)
+    public SearchService(ApplicationDbContext db, IUsersService userService)
     {
         _db = db;
+        _userService = userService;
     }
 
     public async Task<PaginatedResult<TitleSearchResultDto>> StringSearch(
-        Guid? userId,
         string query,
         int page = 0,
         int pageSize = 10
     )
     {
         var allResults = await _db.Set<TitleSearchResultDto>()
-            .FromSqlInterpolated($"SELECT * FROM string_search({userId}, {query})")
+            .FromSqlInterpolated($"SELECT * FROM string_search({query})")
             .ToListAsync();
 
         var total = allResults.Count;
@@ -40,7 +41,7 @@ public class SearchService : ISearchService
     }
 
     public async Task<PaginatedResult<TitleSearchResultDto>> StructuredSearchAsync(
-        Guid? userId,
+        Guid userId,
         string? title,
         string? plot,
         string? characters,
@@ -120,7 +121,6 @@ public class SearchService : ISearchService
     }
 
     public async Task<PaginatedResult<TitleSearchResultDto>> SearchTitlesExact(
-        Guid? userId,
         List<string> words,
         int page = 0,
         int pageSize = 10
@@ -129,7 +129,7 @@ public class SearchService : ISearchService
         var lowercaseWords = words.ConvertAll(w => w.ToLowerInvariant());
 
         var allResults = await _db.Set<TitleSearchResultDto>()
-            .FromSqlInterpolated($"SELECT * FROM search_titles_exact({userId}, {lowercaseWords})")
+            .FromSqlInterpolated($"SELECT * FROM search_titles_exact({lowercaseWords})")
             .ToListAsync();
 
         var total = allResults.Count;
@@ -145,14 +145,13 @@ public class SearchService : ISearchService
     }
 
     public async Task<PaginatedResult<TitleSearchResultDto>> SearchTitlesBestMatch(
-        Guid? userId,
         List<string> words,
         int page = 0,
         int pageSize = 10
     )
     {
         var allResults = await _db.Set<TitleSearchResultDto>()
-            .FromSqlInterpolated($"SELECT * FROM search_titles_best_match({userId}, {words})")
+            .FromSqlInterpolated($"SELECT * FROM search_titles_best_match({words})")
             .ToListAsync();
 
         var total = allResults.Count;
@@ -168,14 +167,13 @@ public class SearchService : ISearchService
     }
 
     public async Task<PaginatedResult<WordFrequencyDto>> SearchWordsToWords(
-        Guid? userId,
         List<string> words,
         int page = 0,
         int pageSize = 10
     )
     {
         var allResults = await _db.Set<WordFrequencyDto>()
-            .FromSqlInterpolated($"SELECT * FROM search_words_to_words({userId}, {words})")
+            .FromSqlInterpolated($"SELECT * FROM search_words_to_words({words})")
             .ToListAsync();
 
         var total = allResults.Count;

@@ -6,14 +6,13 @@ namespace ImdbClone.Api.Interfaces;
 public interface ISearchService
 {
     Task<PaginatedResult<TitleSearchResultDto>> StringSearch(
-        Guid? userId,
         string query,
         int page = 0,
         int pageSize = 10
     );
 
     Task<PaginatedResult<TitleSearchResultDto>> StructuredSearchAsync(
-        Guid? userId,
+        Guid userId,
         string? title,
         string? plot,
         string? characters,
@@ -38,21 +37,18 @@ public interface ISearchService
     );
 
     Task<PaginatedResult<TitleSearchResultDto>> SearchTitlesExact(
-        Guid? userId,
         List<string> words,
         int page = 0,
         int pageSize = 10
     );
 
     Task<PaginatedResult<TitleSearchResultDto>> SearchTitlesBestMatch(
-        Guid? userId,
         List<string> words,
         int page = 0,
         int pageSize = 10
     );
 
     Task<PaginatedResult<WordFrequencyDto>> SearchWordsToWords(
-        Guid? userId,
         List<string> words,
         int page = 0,
         int pageSize = 10

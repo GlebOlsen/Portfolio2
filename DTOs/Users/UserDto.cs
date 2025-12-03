@@ -10,4 +10,12 @@ public class UserDto
     public string Salt { get; set; } = string.Empty;
 }
 
+public class UserResponseDto
+{
+    public Guid UserId { get; init; }
+    public string Username { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+}
+
 public record UpdateUsernameDto(string Username);

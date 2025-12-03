@@ -11,7 +11,7 @@ namespace ImdbClone.Api.Controllers;
 [ApiController]
 [Route("users")]
 public class UsersController(
-    IUserService userService,
+    IUsersService userService,
     Hashing hashing,
     PaginationService paginationService,
     IConfiguration configuration
@@ -21,7 +21,7 @@ public class UsersController(
     public async Task<IActionResult> SignUp(CreateUserDto dto)
     {
         if (
-            await userService.GetUserAsync(dto.Username) is not null
+            await userService.GetUserResponseAsync(dto.Username) is not null
             || string.IsNullOrEmpty(dto.Password)
         )
             return BadRequest();
@@ -29,7 +29,7 @@ public class UsersController(
         var (hashedPwd, salt) = hashing.Hash(dto.Password);
         await userService.CreateUserAsync(dto.Name, dto.Username, dto.Email, hashedPwd, salt);
 
-        var user = await userService.GetUserAsync(dto.Username);
+        var user = await userService.GetUserResponseAsync(dto.Username);
         if (user == null)
             return Unauthorized(new { message = "User creation failed" });
 
@@ -40,9 +40,9 @@ public class UsersController(
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
     {
-        var user = await userService.GetUserAsync(dto.Username);
+        var user = await userService.ValidateLoginAsync(dto.Username, dto.Password);
 
-        if (user == null || !hashing.Verify(dto.Password, user.PasswordHash, user.Salt))
+        if (user == null)
             return Unauthorized(new { message = "Invalid username or password" });
 
         var jwt = userService.GenerateJwtToken(user);

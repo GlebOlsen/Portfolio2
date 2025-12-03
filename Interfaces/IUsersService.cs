@@ -6,10 +6,10 @@ using ImdbClone.Api.Services;
 
 namespace ImdbClone.Api.Interfaces;
 
-public interface IUserService
+public interface IUsersService
 {
-    Task<UserDto?> GetUserAsync(string? username);
-    Task<UserDto?> GetUserByIdAsync(Guid id);
+    Task<UserResponseDto?> GetUserByIdAsync(Guid id);
+    Task<UserResponseDto?> GetUserResponseAsync(string username);
     Task<ImdbUser> CreateUserAsync(
         string name,
         string username,
@@ -48,7 +48,8 @@ public interface IUserService
     Task<bool> DeleteAllSearchHistoryAsync(Guid userId);
     Task<bool> DeleteUserAsync(Guid userId);
 
-    Task<UserDto?> UpdateUsernameAsync(Guid userId, string username);
+    Task<UserResponseDto?> UpdateUsernameAsync(Guid userId, string username);
 
-    string GenerateJwtToken(UserDto user);
+    Task<UserResponseDto?> ValidateLoginAsync(string username, string password);
+    string GenerateJwtToken(UserResponseDto user);
 }

@@ -32,7 +32,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 builder.Services.AddSingleton<Hashing>();
-builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IUsersService, UsersService>();
 builder.Services.AddTransient<ITitleService, TitleService>();
 builder.Services.AddTransient<ICountryService, CountryService>();
 builder.Services.AddTransient<IGenreService, GenreService>();

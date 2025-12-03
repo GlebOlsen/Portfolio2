@@ -1,6 +1,7 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
 using ImdbClone.Api.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
@@ -10,6 +11,7 @@ namespace ImdbClone.Api.Controllers;
 public class SearchController(ISearchService searchService, PaginationService paginationService)
     : ControllerBase
 {
+    [Authorize]
     [HttpGet("structured-search")]
     public async Task<IActionResult> StructuredSearch(
         string? title,
@@ -22,8 +24,13 @@ public class SearchController(ISearchService searchService, PaginationService pa
     {
         var userId = User.GetUserId();
 
+        if (!userId.HasValue)
+        {
+            return Unauthorized("User authentication required");
+        }
+
         var result = await searchService.StructuredSearchAsync(
-            userId,
+            userId.Value,
             title,
             plot,
             characters,
@@ -57,7 +64,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
     {
         var userId = User.GetUserId();
 
-        var result = await searchService.StringSearch(userId, query, page, pageSize);
+        var result = await searchService.StringSearch(query, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "query", query } };
 
@@ -66,6 +73,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
         return Ok(result);
     }
 
+    [Authorize]
     [HttpGet("find-names")]
     public async Task<IActionResult> FindNames(
         string query,
@@ -129,7 +137,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
 
         var userId = User.GetUserId();
 
-        var result = await searchService.SearchTitlesExact(userId, wordsList, page, pageSize);
+        var result = await searchService.SearchTitlesExact(wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
@@ -154,7 +162,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
 
         var userId = User.GetUserId();
 
-        var result = await searchService.SearchTitlesBestMatch(userId, wordsList, page, pageSize);
+        var result = await searchService.SearchTitlesBestMatch(wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
@@ -179,7 +187,7 @@ public class SearchController(ISearchService searchService, PaginationService pa
 
         var userId = User.GetUserId();
 
-        var result = await searchService.SearchWordsToWords(userId, wordsList, page, pageSize);
+        var result = await searchService.SearchWordsToWords(wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
