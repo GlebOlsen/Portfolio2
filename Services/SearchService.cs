@@ -42,7 +42,7 @@ public class SearchService : ISearchService
     }
 
     public async Task<PaginatedResult<TitleSearchResultDto>> StructuredSearchAsync(
-        Guid userId,
+        Guid? userId,
         string? title,
         string? plot,
         string? characters,

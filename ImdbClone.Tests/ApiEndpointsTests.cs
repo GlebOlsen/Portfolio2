@@ -160,14 +160,8 @@ public class ApiEndpointsTests : BaseIntegrationTest
     [Fact]
     public async Task StructuredSearch_ReturnsSuccess()
     {
-        var (token, _) = await RegisterAndLogin();
-        client.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
         var response = await client.GetAsync("/search/structured-search?title=Matrix");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        client.DefaultRequestHeaders.Authorization = null;
     }
 
     [Fact]
@@ -180,14 +174,8 @@ public class ApiEndpointsTests : BaseIntegrationTest
     [Fact]
     public async Task FindNames_ReturnsSuccess()
     {
-        var (token, _) = await RegisterAndLogin();
-        client.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
         var response = await client.GetAsync("/search/find-names?query=Tom");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        client.DefaultRequestHeaders.Authorization = null;
     }
 
     [Fact]

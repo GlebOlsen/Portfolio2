@@ -13,7 +13,7 @@ public interface ISearchService
     );
 
     Task<PaginatedResult<TitleSearchResultDto>> StructuredSearchAsync(
-        Guid userId,
+        Guid? userId,
         string? title,
         string? plot,
         string? characters,

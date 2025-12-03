@@ -11,7 +11,6 @@ namespace ImdbClone.Api.Controllers;
 public class SearchController(ISearchService searchService, PaginationService paginationService)
     : ControllerBase
 {
-    [Authorize]
     [HttpGet("structured-search")]
     public async Task<IActionResult> StructuredSearch(
         string? title,
@@ -24,13 +23,8 @@ public class SearchController(ISearchService searchService, PaginationService pa
     {
         var userId = User.GetUserId();
 
-        if (!userId.HasValue)
-        {
-            return Unauthorized("User authentication required");
-        }
-
         var result = await searchService.StructuredSearchAsync(
-            userId.Value,
+            userId,
             title,
             plot,
             characters,
@@ -73,7 +67,6 @@ public class SearchController(ISearchService searchService, PaginationService pa
         return Ok(result);
     }
 
-    [Authorize]
     [HttpGet("find-names")]
     public async Task<IActionResult> FindNames(
         string query,
