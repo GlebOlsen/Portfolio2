@@ -18,7 +18,7 @@ public class TitleFullDto
     public string Tconst { get; set; } = string.Empty;
     public string PrimaryTitle { get; set; } = string.Empty;
     public string? OriginalTitle { get; set; }
-    public TitleType? Type { get; set; }
+    public string? Type { get; set; }
     public int? StartYear { get; set; }
     public int? EndYear { get; set; }
 

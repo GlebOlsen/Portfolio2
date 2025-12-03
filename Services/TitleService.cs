@@ -2,6 +2,7 @@ using ImdbClone.Api.Database;
 using ImdbClone.Api.DTOs;
 using ImdbClone.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 
 namespace ImdbClone.Api.Services;
 
@@ -54,7 +55,7 @@ public class TitleService : ITitleService
                 Tconst = t.Tconst,
                 PrimaryTitle = t.PrimaryTitle,
                 OriginalTitle = t.OriginalTitle,
-                Type = t.TitleType,
+                Type = t.TitleType.GetDisplayName(),
                 StartYear = t.StartYear,
                 EndYear = t.EndYear,
                 RuntimeMin = t.RunTimeMin,
@@ -69,7 +70,7 @@ public class TitleService : ITitleService
                     {
                         Nconst = tp.Nconst,
                         FullName = tp.Person.FullName,
-                        Category = tp.Category,
+                        Category = tp.Category.ToString(),
                         CharacterName = tp.CharacterName,
                     })
                     .ToList(),
