@@ -62,7 +62,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
         [FromQuery] int pageSize = 10
     )
     {
-        var result = await searchService.StringSearch(query, page, pageSize);
+        var userId = User.GetUserId();
+
+        var result = await searchService.StringSearch(userId, query, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "query", query } };
 
@@ -133,7 +135,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var result = await searchService.SearchTitlesExact(wordsList, page, pageSize);
+        var userId = User.GetUserId();
+
+        var result = await searchService.SearchTitlesExact(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
@@ -156,7 +160,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var result = await searchService.SearchTitlesBestMatch(wordsList, page, pageSize);
+        var userId = User.GetUserId();
+
+        var result = await searchService.SearchTitlesBestMatch(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
@@ -179,7 +185,9 @@ public class SearchController(ISearchService searchService, PaginationService pa
             .Select(w => w.Trim())
             .ToList();
 
-        var result = await searchService.SearchWordsToWords(wordsList, page, pageSize);
+        var userId = User.GetUserId();
+
+        var result = await searchService.SearchWordsToWords(userId, wordsList, page, pageSize);
 
         var queryParams = new Dictionary<string, string?> { { "words", words } };
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);
