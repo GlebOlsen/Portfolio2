@@ -48,7 +48,11 @@ builder.Services.AddCors(options =>
         name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+            policy
+                .WithOrigins("http://localhost:5173")
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         }
     );
 });
@@ -59,6 +63,25 @@ builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
     {
+        opt.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["authToken"];
+
+                if (string.IsNullOrEmpty(context.Token))
+                {
+                    context.Token = context
+                        .Request.Headers["Authorization"]
+                        .FirstOrDefault()
+                        .Split(" ")
+                        .Last(); //Because the format is Bearer Token
+                }
+
+                return Task.CompletedTask;
+            },
+        };
+
         opt.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
