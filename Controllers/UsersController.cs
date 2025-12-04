@@ -1,5 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+using System.Security.Claims;
 using ImdbClone.Api.DTOs;
 using ImdbClone.Api.DTOs.Users;
 using ImdbClone.Api.Interfaces;
@@ -38,7 +38,7 @@ public class UsersController(
             return Unauthorized();
         }
 
-        var username = token.Claims.FirstOrDefault(c => c.Type == "username")?.Value;
+        var username = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
         if (string.IsNullOrEmpty(username))
             return Unauthorized();

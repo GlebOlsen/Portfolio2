@@ -71,11 +71,11 @@ builder
 
                 if (string.IsNullOrEmpty(context.Token))
                 {
-                    context.Token = context
-                        .Request.Headers["Authorization"]
-                        .FirstOrDefault()
-                        .Split(" ")
-                        .Last(); //Because the format is Bearer Token
+                    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                    {
+                        context.Token = authHeader.Substring("Bearer ".Length);
+                    }
                 }
 
                 return Task.CompletedTask;
