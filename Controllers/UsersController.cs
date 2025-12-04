@@ -111,6 +111,13 @@ public class UsersController(
         return Ok(new { username = user.Username, email = user.Email });
     }
 
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete("authToken");
+        return Ok(new { message = "Logged out successfully" });
+    }
+
     [HttpPatch("update-username")]
     [Authorize]
     public async Task<IActionResult> UpdateUsername([FromBody] UpdateUsernameDto dto)
