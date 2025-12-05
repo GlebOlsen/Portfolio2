@@ -12,12 +12,26 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ImdbClone.Api.Services;
 
-public class UserService(ApplicationDbContext dbContext, IConfiguration configuration)
-    : IUserService
+public class UsersService : IUsersService
 {
-    public async Task<UserDto?> GetUserAsync(string? username)
+    private readonly ApplicationDbContext _dbContext;
+    private readonly IConfiguration _configuration;
+    private readonly Hashing _hashing;
+
+    public UsersService(
+        ApplicationDbContext dbContext,
+        IConfiguration configuration,
+        Hashing hashing
+    )
     {
-        var user = await dbContext.ImdbUsers.FirstOrDefaultAsync(u => u.Username == username);
+        _dbContext = dbContext;
+        _configuration = configuration;
+        _hashing = hashing;
+    }
+
+    private async Task<UserDto?> GetUserAsync(string? username)
+    {
+        var user = await _dbContext.ImdbUsers.FirstOrDefaultAsync(u => u.Username == username);
 
         if (user is null)
             return null;
@@ -33,14 +47,30 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         };
     }
 
-    public async Task<UserDto?> GetUserAsync(Guid id)
+    public async Task<UserResponseDto?> ValidateLoginAsync(string username, string password)
     {
-        var user = await dbContext.ImdbUsers.FirstOrDefaultAsync(u => u.UserId == id);
+        var user = await GetUserAsync(username);
+
+        if (user == null || !_hashing.Verify(password, user.PasswordHash, user.Salt))
+            return null;
+
+        return new UserResponseDto
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Name = user.Name,
+            Email = user.Email,
+        };
+    }
+
+    public async Task<UserResponseDto?> GetUserByIdAsync(Guid id)
+    {
+        var user = await _dbContext.ImdbUsers.FirstOrDefaultAsync(u => u.UserId == id);
 
         if (user is null)
             return null;
 
-        return new UserDto
+        return new UserResponseDto
         {
             UserId = user.UserId,
             Username = user.Username,
@@ -66,9 +96,45 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
             Salt = salt,
         };
 
-        await dbContext.ImdbUsers.AddAsync(user);
-        await dbContext.SaveChangesAsync();
+        await _dbContext.ImdbUsers.AddAsync(user);
+        await _dbContext.SaveChangesAsync();
         return user;
+    }
+
+    public async Task<UserResponseDto?> GetUserResponseAsync(string username)
+    {
+        var user = await _dbContext.ImdbUsers.FirstOrDefaultAsync(u => u.Username == username);
+
+        if (user is null)
+            return null;
+
+        return new UserResponseDto
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Name = user.Name,
+            Email = user.Email,
+        };
+    }
+
+    public async Task<UserResponseDto?> UpdateUsernameAsync(Guid userId, string username)
+    {
+        var user = await _dbContext.ImdbUsers.FindAsync(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        user.Username = username;
+        await _dbContext.SaveChangesAsync();
+
+        return new UserResponseDto
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Name = user.Name,
+            Email = user.Email,
+        };
     }
 
     public async Task<PaginatedResult<BookmarkTitleListDto>> GetAllBookmarkedTitlesAsync(
@@ -77,9 +143,9 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         int pageSize = 10
     )
     {
-        var total = await dbContext.BookmarkTitles.CountAsync(bt => bt.UserId == userId);
+        var total = await _dbContext.BookmarkTitles.CountAsync(bt => bt.UserId == userId);
 
-        var items = await dbContext
+        var items = await _dbContext
             .BookmarkTitles.Where(bt => bt.UserId == userId)
             .Select(bt => new BookmarkTitleListDto
             {
@@ -103,12 +169,12 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> CreateBookmarkTitleAsync(Guid userId, string tconst)
     {
-        var titleExists = await dbContext.Titles.AnyAsync(t => t.Tconst == tconst);
+        var titleExists = await _dbContext.Titles.AnyAsync(t => t.Tconst == tconst);
 
         if (!titleExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
+        await _dbContext.Database.ExecuteSqlRawAsync(
             "SELECT bookmark_title({0}, {1})",
             userId,
             tconst
@@ -118,14 +184,14 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> DeleteBookmarkTitleAsync(Guid userId, string tconst)
     {
-        var titleBookmarkExists = await dbContext.BookmarkTitles.AnyAsync(bt =>
+        var titleBookmarkExists = await _dbContext.BookmarkTitles.AnyAsync(bt =>
             bt.UserId == userId && bt.Tconst == tconst
         );
 
         if (!titleBookmarkExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
+        await _dbContext.Database.ExecuteSqlRawAsync(
             "SELECT unbookmark_title({0}, {1})",
             userId,
             tconst
@@ -139,9 +205,9 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         int pageSize = 10
     )
     {
-        var total = await dbContext.BookmarkPeople.CountAsync(bt => bt.UserId == userId);
+        var total = await _dbContext.BookmarkPeople.CountAsync(bt => bt.UserId == userId);
 
-        var items = await dbContext
+        var items = await _dbContext
             .BookmarkPeople.Where(bp => bp.UserId == userId)
             .Select(bp => new BookmarkPersonListDto
             {
@@ -165,12 +231,12 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> CreateBookmarkPersonAsync(Guid userId, string nconst)
     {
-        var personExists = await dbContext.People.AnyAsync(p => p.Nconst == nconst);
+        var personExists = await _dbContext.People.AnyAsync(p => p.Nconst == nconst);
 
         if (!personExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
+        await _dbContext.Database.ExecuteSqlRawAsync(
             "SELECT bookmark_person({0}, {1})",
             userId,
             nconst
@@ -180,14 +246,14 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> DeleteBookmarkPersonAsync(Guid userId, string nconst)
     {
-        var personBookmarkExists = await dbContext.BookmarkPeople.AnyAsync(bp =>
+        var personBookmarkExists = await _dbContext.BookmarkPeople.AnyAsync(bp =>
             bp.UserId == userId && bp.Nconst == nconst
         );
 
         if (!personBookmarkExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
+        await _dbContext.Database.ExecuteSqlRawAsync(
             "SELECT unbookmark_person({0}, {1})",
             userId,
             nconst
@@ -201,9 +267,9 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         int pageSize = 10
     )
     {
-        var total = await dbContext.UserRatings.CountAsync(ur => ur.UserId == userId);
+        var total = await _dbContext.UserRatings.CountAsync(ur => ur.UserId == userId);
 
-        var items = await dbContext
+        var items = await _dbContext
             .UserRatings.Where(ur => ur.UserId == userId)
             .Select(ur => new TitleRatingListDto
             {
@@ -228,12 +294,12 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> CreateTitleRatingAsync(Guid userId, string tconst, int rating)
     {
-        var titleExists = await dbContext.Titles.AnyAsync(t => t.Tconst == tconst);
+        var titleExists = await _dbContext.Titles.AnyAsync(t => t.Tconst == tconst);
 
         if (!titleExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
+        await _dbContext.Database.ExecuteSqlRawAsync(
             "SELECT rate({0}, {1}, {2})",
             userId,
             tconst,
@@ -244,14 +310,14 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> DeleteTitleRatingAsync(string tconst, Guid userId)
     {
-        var ratingExists = await dbContext.UserRatings.AnyAsync(t =>
+        var ratingExists = await _dbContext.UserRatings.AnyAsync(t =>
             t.Tconst == tconst && t.UserId == userId
         );
 
         if (!ratingExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync(
+        await _dbContext.Database.ExecuteSqlRawAsync(
             "SELECT delete_user_rating({0}, {1})",
             tconst,
             userId
@@ -265,9 +331,9 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
         int pageSize = 10
     )
     {
-        var total = await dbContext.SearchHistories.CountAsync(sh => sh.UserId == userId);
+        var total = await _dbContext.SearchHistories.CountAsync(sh => sh.UserId == userId);
 
-        var items = await dbContext
+        var items = await _dbContext
             .SearchHistories.Where(sh => sh.UserId == userId)
             .Select(sh => new SearchHistoryListDto()
             {
@@ -290,31 +356,31 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
 
     public async Task<bool> DeleteAllSearchHistoryAsync(Guid userId)
     {
-        var searchHistoryExists = await dbContext.SearchHistories.AnyAsync(sh =>
+        var searchHistoryExists = await _dbContext.SearchHistories.AnyAsync(sh =>
             sh.UserId == userId
         );
 
         if (!searchHistoryExists)
             return false;
 
-        await dbContext.Database.ExecuteSqlRawAsync("SELECT clear_search_history({0})", userId);
+        await _dbContext.Database.ExecuteSqlRawAsync("SELECT clear_search_history({0})", userId);
         return true;
     }
 
     public async Task<bool> DeleteUserAsync(Guid userId)
     {
-        var user = await dbContext.ImdbUsers.FindAsync(userId);
+        var user = await _dbContext.ImdbUsers.FindAsync(userId);
         if (user == null)
         {
             return false;
         }
 
-        dbContext.ImdbUsers.Remove(user);
-        await dbContext.SaveChangesAsync();
+        _dbContext.ImdbUsers.Remove(user);
+        await _dbContext.SaveChangesAsync();
         return true;
     }
 
-    public string GenerateJwtToken(UserDto user)
+    public string GenerateJwtToken(UserResponseDto user)
     {
         var claims = new List<Claim>
         {
@@ -322,7 +388,7 @@ public class UserService(ApplicationDbContext dbContext, IConfiguration configur
             new Claim(ClaimTypes.Name, user.Username),
         };
 
-        var secret = configuration["JWT_SECRET"];
+        var secret = _configuration["JWT_SECRET"];
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);

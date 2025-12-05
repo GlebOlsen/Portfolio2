@@ -32,7 +32,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 builder.Services.AddSingleton<Hashing>();
-builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IUsersService, UsersService>();
 builder.Services.AddTransient<ITitleService, TitleService>();
 builder.Services.AddTransient<ICountryService, CountryService>();
 builder.Services.AddTransient<IGenreService, GenreService>();
@@ -48,7 +48,11 @@ builder.Services.AddCors(options =>
         name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+            policy
+                .WithOrigins("http://localhost:5173")
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         }
     );
 });
@@ -59,6 +63,25 @@ builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
     {
+        opt.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["authToken"];
+
+                if (string.IsNullOrEmpty(context.Token))
+                {
+                    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                    {
+                        context.Token = authHeader.Substring("Bearer ".Length);
+                    }
+                }
+
+                return Task.CompletedTask;
+            },
+        };
+
         opt.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,

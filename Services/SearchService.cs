@@ -9,10 +9,12 @@ namespace ImdbClone.DataService.Services;
 public class SearchService : ISearchService
 {
     private readonly ApplicationDbContext _db;
+    private readonly IUsersService _userService;
 
-    public SearchService(ApplicationDbContext db)
+    public SearchService(ApplicationDbContext db, IUsersService userService)
     {
         _db = db;
+        _userService = userService;
     }
 
     public async Task<PaginatedResult<TitleSearchResultDto>> StringSearch(

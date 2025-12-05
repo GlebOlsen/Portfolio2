@@ -1,6 +1,7 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
 using ImdbClone.Api.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
