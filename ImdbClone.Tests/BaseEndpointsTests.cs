@@ -37,7 +37,7 @@ public abstract class BaseIntegrationTest : IDisposable
         return new ApplicationDbContext(options);
     }
 
-    protected async Task<(string Token, string Username)> RegisterAndLogin()
+    protected async Task<string> RegisterAndLogin()
     {
         var username = $"testuser_{Guid.NewGuid()}";
         var password = "Password123!";
@@ -58,10 +58,13 @@ public abstract class BaseIntegrationTest : IDisposable
         var loginResponse = await client.PostAsJsonAsync("/users/login", loginDto);
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
 
-        var loginResult = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var token = loginResult.GetProperty("token").GetString();
+        return username;
+    }
 
-        return (token ?? string.Empty, username);
+    protected async Task DeleteCurrentUser()
+    {
+        var response = await client.DeleteAsync("/users");
+        Assert.True(response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound);
     }
 
     protected async Task<Guid> CreateTestGenre(string? genreName = null)
