@@ -46,7 +46,7 @@ public class TitleService : ITitleService
         };
     }
 
-    public async Task<TitleFullDto?> GetTitleByIdAsync(string tconst)
+    public async Task<TitleFullDto?> GetTitleByIdAsync(string tconst, Guid? userId)
     {
         return await _db
             .Titles.Where(t => t.Tconst == tconst)
@@ -74,6 +74,8 @@ public class TitleService : ITitleService
                         CharacterName = tp.CharacterName,
                     })
                     .ToList(),
+                IsBookmarked = userId != null && t.BookmarkTitles.Any(b => b.UserId == userId),
+                UserRating = userId != null ? t.UserRatings.FirstOrDefault(ur => ur.UserId == userId).Rating : null
             })
             .FirstOrDefaultAsync();
     }

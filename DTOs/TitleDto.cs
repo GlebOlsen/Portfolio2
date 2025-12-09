@@ -31,6 +31,8 @@ public class TitleFullDto
     public List<string> Genres { get; set; } = new();
     public List<string?> Countries { get; set; }
     public List<TitlePersonDto> People { get; set; } = new();
+    public bool IsBookmarked { get; set; }
+    public int? UserRating { get; set; }
 }
 
 public class TitleRatingListDto

@@ -51,4 +51,6 @@ public class Title
     public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 
     public ICollection<Country> Countries { get; set; } = new List<Country>();
+    public ICollection<BookmarkTitle> BookmarkTitles { get; set; } = new List<BookmarkTitle>();
+    public ICollection<UserRating> UserRatings { get; set; } = new List<UserRating>();
 }
