@@ -24,4 +24,6 @@ public class Person
     public ICollection<Title> KnownForTitles { get; set; } = new List<Title>();
 
     public ICollection<Profession> Professions { get; set; } = new List<Profession>();
+
+    public ICollection<BookmarkPerson> BookmarkPersons { get; set; } = new List<BookmarkPerson>();
 }

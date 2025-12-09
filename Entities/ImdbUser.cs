@@ -27,5 +27,8 @@ public class ImdbUser
     [Column("created_at")]
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public ICollection<BookmarkTitle> BookmarkTitles { get; set; } = new List<BookmarkTitle>();
+
+    public ICollection<BookmarkPerson> BookmarkPersons { get; set; } = new List<BookmarkPerson>();
+        
     public ICollection<UserRating> UserRatings { get; set; } = new List<UserRating>();
 }

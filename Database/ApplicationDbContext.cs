@@ -142,7 +142,8 @@ namespace ImdbClone.Api.Database
             mb.Entity<BookmarkTitle>()
                 .HasOne(bt => bt.User)
                 .WithMany(u => u.BookmarkTitles)
-                .HasForeignKey(b => b.UserId);
+                .HasForeignKey(b => b.UserId)
+                .HasPrincipalKey(u => u.UserId);
 
             mb.Entity<BookmarkTitle>()
                 .HasOne(bt => bt.Title)
@@ -152,13 +153,15 @@ namespace ImdbClone.Api.Database
 
             mb.Entity<BookmarkPerson>()
                 .HasOne(bp => bp.User)
-                .WithMany()
-                .HasForeignKey(bp => bp.UserId);
+                .WithMany(u => u.BookmarkPersons)
+                .HasForeignKey(bp => bp.UserId)
+                .HasPrincipalKey(u => u.UserId);
 
             mb.Entity<BookmarkPerson>()
                 .HasOne(bp => bp.Person)
-                .WithMany()
-                .HasForeignKey(bp => bp.Nconst);
+                .WithMany(p => p.BookmarkPersons)
+                .HasForeignKey(bp => bp.Nconst)
+                .HasPrincipalKey(p => p.Nconst);
 
             mb.Entity<SearchHistory>()
                 .HasOne(sh => sh.User)

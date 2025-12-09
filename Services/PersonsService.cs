@@ -44,7 +44,7 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task<PersonFullDto?> GetPersonByIdAsync(string nconst)
+    public async Task<PersonFullDto?> GetPersonByIdAsync(string nconst, Guid? userId)
     {
         return await _db
             .People.Where(p => p.Nconst == nconst)
@@ -56,6 +56,7 @@ public class PersonService : IPersonService
                 DeathYear = p.DeathYear,
                 DerivedRating = p.DerivedRating,
                 Professions = p.Professions.ToList(),
+                IsBookmarked = userId != null && p.BookmarkPersons.Any(b => b.UserId == userId),
             })
             .FirstOrDefaultAsync();
     }
