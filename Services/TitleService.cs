@@ -16,14 +16,36 @@ public class TitleService : ITitleService
     }
 
     public async Task<PaginatedResult<TitleListDto>> GetAllTitlesAsync(
+        int? year,
+        string? titleType,
+        string? genreName,
         int page = 0,
         int pageSize = 10
     )
     {
-        var total = await _db.Titles.CountAsync();
+        var query = _db.Titles.AsQueryable();
 
-        var items = await _db
-            .Titles.OrderBy(t => t.PrimaryTitle)
+        if (!string.IsNullOrWhiteSpace(genreName))
+        {
+            query = query.Where(t => 
+                t.Genres.Any(g => g.GenreName.ToLower() == genreName.ToLower()));
+        }
+        
+        if (!string.IsNullOrWhiteSpace(titleType))
+        {
+            query = query.Where(t => 
+                t.TitleType.ToString().ToLower() == titleType.ToLower());
+        }
+        
+        if (year.HasValue)
+        {
+            query = query.Where(t => 
+                t.StartYear == year.Value);
+        }
+        
+        var total = await query.CountAsync();
+
+        var items = await query.OrderBy(t => t.PrimaryTitle)
             .Skip(page * pageSize)
             .Take(pageSize)
             .Select(t => new TitleListDto
