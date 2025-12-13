@@ -44,6 +44,7 @@ public class TitleService : ITitleService
         }
         
         var total = await query.CountAsync();
+        
 
         var items = await query.OrderBy(t => t.PrimaryTitle)
             .Skip(page * pageSize)
@@ -54,8 +55,12 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType,
+                Type = t.TitleType.GetDisplayName(),
                 PosterUrl = t.Poster,
+                AvgRating = _db.Ratings
+                    .Where(r => r.Tconst == t.Tconst)
+                    .Select(r => r.AvgRating)
+                    .FirstOrDefault()
             })
             .ToListAsync();
 
@@ -123,7 +128,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType,
+                Type = t.TitleType.GetDisplayName(),
                 PosterUrl = t.Poster,
             })
             .ToListAsync();
@@ -156,7 +161,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType,
+                Type = t.TitleType.GetDisplayName(),
                 PosterUrl = t.Poster,
             })
             .ToListAsync();
@@ -189,7 +194,7 @@ public class TitleService : ITitleService
                 PrimaryTitle = t.PrimaryTitle,
                 StartYear = t.StartYear,
                 Plot = t.Plot,
-                Type = t.TitleType,
+                Type = t.TitleType.GetDisplayName(),
                 PosterUrl = t.Poster,
             })
             .ToListAsync();
