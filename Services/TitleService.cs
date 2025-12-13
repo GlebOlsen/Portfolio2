@@ -45,7 +45,6 @@ public class TitleService : ITitleService
         
         var total = await query.CountAsync();
         
-
         var items = await query.OrderBy(t => t.PrimaryTitle)
             .Skip(page * pageSize)
             .Take(pageSize)
