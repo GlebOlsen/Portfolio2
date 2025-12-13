@@ -1,5 +1,6 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using ImdbClone.Api.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
@@ -33,7 +34,9 @@ public class TitlesController(ITitleService titleService, PaginationService pagi
     [HttpGet("{tconst}")]
     public async Task<IActionResult> GetTitleById(string tconst)
     {
-        var result = await titleService.GetTitleByIdAsync(tconst);
+        var userId = User.GetUserId();
+        
+        var result = await titleService.GetTitleByIdAsync(tconst, userId);
 
         if (result == null)
         {

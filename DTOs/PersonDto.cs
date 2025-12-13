@@ -19,6 +19,7 @@ public class PersonFullDto
     public int? DeathYear { get; set; }
     public decimal? DerivedRating { get; set; }
     public List<Profession> Professions { get; set; } = new();
+    public bool IsBookmarked { get; set; }
 }
 
 public class PersonSearchResultDto

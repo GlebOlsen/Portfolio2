@@ -135,8 +135,21 @@ public class UsersController(
         }
 
         var jwt = usersService.GenerateJwtToken(result);
+        
+        Response.Cookies.Append(
+            "authToken",
+            jwt,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                Path = "/",
+            }
+        );
 
-        return Ok(new { result.Username, jwt });
+        return Ok(new { result.Username });
     }
 
     [HttpDelete]

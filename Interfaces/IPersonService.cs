@@ -6,5 +6,5 @@ namespace ImdbClone.Api.Interfaces;
 public interface IPersonService
 {
     Task<PaginatedResult<PersonListDto>> GetAllPersonsAsync(int page = 0, int pageSize = 10);
-    Task<PersonFullDto?> GetPersonByIdAsync(string nconst);
+    Task<PersonFullDto?> GetPersonByIdAsync(string nconst, Guid? userId);
 }

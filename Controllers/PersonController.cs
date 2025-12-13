@@ -1,5 +1,6 @@
 using ImdbClone.Api.Interfaces;
 using ImdbClone.Api.Services;
+using ImdbClone.Api.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImdbClone.Api.Controllers;
@@ -26,7 +27,9 @@ public class PersonsController(IPersonService personService, PaginationService p
     [HttpGet("{nconst}")]
     public async Task<IActionResult> GetPersonById(string nconst)
     {
-        var result = await personService.GetPersonByIdAsync(nconst);
+        var userId = User.GetUserId();
+        
+        var result = await personService.GetPersonByIdAsync(nconst, userId);
 
         if (result == null)
         {

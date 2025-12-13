@@ -127,32 +127,41 @@ namespace ImdbClone.Api.Database
 
             mb.Entity<Rating>().HasOne(r => r.Title).WithMany().HasForeignKey(r => r.Tconst);
 
-            mb.Entity<UserRating>().HasOne(ur => ur.User).WithMany().HasForeignKey(ur => ur.UserId);
+            mb.Entity<UserRating>()
+                .HasOne(ur => ur.User)
+                .WithMany(ur => ur.UserRatings)
+                .HasForeignKey(ur => ur.UserId)
+                .HasPrincipalKey(ur => ur.UserId);
 
             mb.Entity<UserRating>()
                 .HasOne(ur => ur.Title)
-                .WithMany()
-                .HasForeignKey(ur => ur.Tconst);
+                .WithMany(t => t.UserRatings)
+                .HasForeignKey(ur => ur.Tconst)
+                .HasPrincipalKey(ur => ur.Tconst);
 
             mb.Entity<BookmarkTitle>()
                 .HasOne(bt => bt.User)
-                .WithMany()
-                .HasForeignKey(bt => bt.UserId);
+                .WithMany(u => u.BookmarkTitles)
+                .HasForeignKey(b => b.UserId)
+                .HasPrincipalKey(u => u.UserId);
 
             mb.Entity<BookmarkTitle>()
                 .HasOne(bt => bt.Title)
-                .WithMany()
-                .HasForeignKey(bt => bt.Tconst);
+                .WithMany(t => t.BookmarkTitles)
+                .HasForeignKey(bt => bt.Tconst)
+                .HasPrincipalKey(t => t.Tconst);
 
             mb.Entity<BookmarkPerson>()
                 .HasOne(bp => bp.User)
-                .WithMany()
-                .HasForeignKey(bp => bp.UserId);
+                .WithMany(u => u.BookmarkPersons)
+                .HasForeignKey(bp => bp.UserId)
+                .HasPrincipalKey(u => u.UserId);
 
             mb.Entity<BookmarkPerson>()
                 .HasOne(bp => bp.Person)
-                .WithMany()
-                .HasForeignKey(bp => bp.Nconst);
+                .WithMany(p => p.BookmarkPersons)
+                .HasForeignKey(bp => bp.Nconst)
+                .HasPrincipalKey(p => p.Nconst);
 
             mb.Entity<SearchHistory>()
                 .HasOne(sh => sh.User)

@@ -375,6 +375,42 @@ public class UsersService : IUsersService
             return false;
         }
 
+        var userRatings = await _dbContext.UserRatings
+            .Where(ur => ur.UserId == userId)
+            .ToListAsync();
+
+        if (userRatings.Count > 0)
+        {
+            _dbContext.UserRatings.RemoveRange(userRatings);
+        }
+
+        var userTitleBookmarks = await _dbContext.BookmarkTitles
+            .Where(bt => bt.UserId == userId)
+            .ToListAsync();
+
+        if (userTitleBookmarks.Count > 0)
+        {
+            _dbContext.BookmarkTitles.RemoveRange(userTitleBookmarks);
+        }
+
+        var userPersonBookmarks = await _dbContext.BookmarkPeople
+            .Where(bp => bp.UserId == userId)
+            .ToListAsync();
+
+        if (userPersonBookmarks.Count > 0)
+        {
+            _dbContext.BookmarkPeople.RemoveRange(userPersonBookmarks);
+        }
+
+        var userSearchHistory = await _dbContext.SearchHistories
+            .Where(sh => sh.UserId == userId)
+            .ToListAsync();
+
+        if (userSearchHistory.Count > 0)
+        {
+            _dbContext.SearchHistories.RemoveRange(userSearchHistory);
+        }
+
         _dbContext.ImdbUsers.Remove(user);
         await _dbContext.SaveChangesAsync();
         return true;
