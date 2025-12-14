@@ -5,7 +5,7 @@ namespace ImdbClone.Api.Interfaces;
 
 public interface ITitleService
 {
-    Task<PaginatedResult<TitleListDto>> GetAllTitlesAsync(int page = 0, int pageSize = 10);
+    Task<PaginatedResult<TitleListDto>> GetAllTitlesAsync(int? year, string? titleType, string? genreName, int page = 0, int pageSize = 10);
     Task<TitleFullDto?> GetTitleByIdAsync(string tconst, Guid? userId);
 
     Task<PaginatedResult<TitleListDto>> GetTitlesByGenre(

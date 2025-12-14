@@ -12,11 +12,14 @@ public class TitlesController(ITitleService titleService, PaginationService pagi
 {
     [HttpGet]
     public async Task<IActionResult> GetAllTitlesAsync(
+        [FromQuery] int? year,
+        [FromQuery] string? titleType,
+        [FromQuery] string? genreName,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 10
     )
     {
-        var result = await titleService.GetAllTitlesAsync(page, pageSize);
+        var result = await titleService.GetAllTitlesAsync(year, titleType, genreName, page, pageSize);
 
         var queryParams = new Dictionary<string, string?>();
         paginationService.SetPaginationUrls(result, Request.Path, queryParams);

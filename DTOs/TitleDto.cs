@@ -9,8 +9,9 @@ public class TitleListDto
     public string PrimaryTitle { get; set; } = string.Empty;
     public int? StartYear { get; set; }
     public string? Plot { get; set; }
-    public TitleType? Type { get; set; }
+    public string? Type { get; set; }
     public string? PosterUrl { get; set; }
+    public decimal? AvgRating { get; set; }
 }
 
 public class TitleFullDto
