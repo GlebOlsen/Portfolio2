@@ -27,4 +27,5 @@ public interface ITitleService
     Task<int> GetTotalTitlesCountAsync();
     Task<List<GenreDto>> GetGenresByTitleAsync(string tconst);
     Task<List<CountryDto>> GetCountriesByTitleAsync(string tconst);
+    Task<PaginatedResult<SimilarTitleDto>> GetSimilarTitlesAsync(string tconst, int page = 0, int pageSize = 5);
 }
