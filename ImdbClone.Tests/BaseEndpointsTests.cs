@@ -16,7 +16,7 @@ public abstract class BaseIntegrationTest : IDisposable
     private const string BaseUrl = "http://localhost:5082"; // REMEMBER TO CHANGE THE PORT IF NEEDED!!!
 
     protected const string ConnectionString =
-        "Host=localhost;Database=imdb;Username=postgres;Password=Pulnaskrub13%";
+        "Host=localhost;Database=imdb;Username=postgres;Password=";
 
     protected BaseIntegrationTest()
     {
