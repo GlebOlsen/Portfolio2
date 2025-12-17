@@ -107,4 +107,19 @@ public class TitlesController(ITitleService titleService, PaginationService pagi
 
         return Ok(result);
     }
+
+    [HttpGet("{tconst}/similar")]
+    public async Task<IActionResult> GetSimilarTitles(
+        string tconst,
+        [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 5
+    )
+    {
+        var result = await titleService.GetSimilarTitlesAsync(tconst, page, pageSize);
+        
+        var queryParams = new Dictionary<string, string?>();
+        paginationService.SetPaginationUrls(result, Request.Path, queryParams);
+        
+        return Ok(result);
+    }
 }

@@ -31,6 +31,7 @@ namespace ImdbClone.Api.Database
         public DbSet<PersonSearchResultDto> PersonSearchResults { get; set; }
         public DbSet<PersonWithProfessionDto> PersonWithProfessionDto { get; set; }
         public DbSet<WordFrequencyDto> WordFrequencies { get; set; }
+        public DbSet<SimilarTitleDto> SimilarTitles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -54,6 +55,7 @@ namespace ImdbClone.Api.Database
             mb.Entity<PersonSearchResultDto>().HasNoKey().ToView(null);
             mb.Entity<PersonWithProfessionDto>().HasNoKey().ToView(null);
             mb.Entity<WordFrequencyDto>().HasNoKey().ToView(null);
+            mb.Entity<SimilarTitleDto>().HasNoKey().ToView(null);
 
             mb.Entity<Title>().Property(t => t.TitleType).HasConversion<string>();
             mb.Entity<TitlePerson>().Property(tp => tp.Category).HasConversion<string>();

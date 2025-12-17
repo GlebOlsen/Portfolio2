@@ -207,4 +207,11 @@ public class ApiEndpointsTests : BaseIntegrationTest
         var response = await client.GetAsync("/search/search-words-to-words?words=action,hero");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetSimilarTitles_ReturnsSuccess()
+    {
+        var response = await client.GetAsync("/titles/tt0052520/similar");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }

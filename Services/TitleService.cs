@@ -229,4 +229,25 @@ public class TitleService : ITitleService
             .Select(g => new GenreDto { GenreId = g.GenreId, GenreName = g.GenreName })
             .ToListAsync();
     }
+
+    public async Task<PaginatedResult<SimilarTitleDto>> GetSimilarTitlesAsync(string tconst, int page = 0, int pageSize = 5)
+    {
+        var query = _db.SimilarTitles
+            .FromSqlInterpolated($"select * from similar_titles({tconst})");
+
+        var total = await query.CountAsync();
+
+        var items = await query
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<SimilarTitleDto>
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
 }
